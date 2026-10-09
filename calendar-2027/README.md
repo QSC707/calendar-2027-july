@@ -42,11 +42,12 @@
 
 ```
 huawei/
-├── calendar.html              # 全年年历组件（单文件，含全部样式与交互）
-├── README.md                  # 项目说明
-└── publish/                   # 华为云作品展览馆发布工具
-    ├── publish-config.json    # 发布配置（作品信息、凭证参数）
-    ├── publish-work.sh        # 一键发布脚本
+├── calendar-2027/             # 本项目
+│   ├── calendar.html          # 全年年历组件（单文件，含全部样式与交互）
+│   ├── README.md              # 项目说明
+│   └── publish-config.json    # 发布配置（作品信息、凭证参数）
+└── publish/                   # 共享发布工具（多项目复用）
+    ├── publish-work.sh        # 一键发布脚本（接受项目名参数）
     ├── gen_sts.py             # STS 临时凭证生成
     ├── generate_cover.py      # 封面截图生成（Playwright）
     ├── pack_detail.py         # 详情包打包
@@ -55,10 +56,10 @@ huawei/
 
 ## 发布
 
-编辑 `publish/publish-config.json` 填写作品信息，然后在项目根目录运行：
+编辑 `calendar-2027/publish-config.json` 填写作品信息，然后在仓库根目录运行：
 
 ```bash
-"C:\Program Files\Git\bin\bash.exe" publish\publish-work.sh
+"C:\Program Files\Git\bin\bash.exe" publish\publish-work.sh calendar-2027
 ```
 
-新增项目只需修改 `publish-config.json` 中的 `htmlFile`、`workName` 等字段即可复用整套发布流程。
+新增项目只需创建新文件夹（含 `html` + `README.md` + `publish-config.json`），然后指定项目名即可复用整套发布流程。

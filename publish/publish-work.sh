@@ -3,29 +3,50 @@ set -e
 
 # ============================================================
 # 华为云作品展览馆一键发布脚本（通用版）
-# 用法: bash publish/publish-work.sh
-# 配置: 编辑 publish/publish-config.json
+# 用法: bash publish/publish-work.sh <项目名>
+# 示例: bash publish/publish-work.sh calendar-2027
+# 配置: 编辑 <项目名>/publish-config.json
 # 前置: hcloud 已 configure set + Python + Playwright
 # ============================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-CONFIG="$SCRIPT_DIR/publish-config.json"
-SCRIPT_DIR_WIN=$(cygpath -m "$SCRIPT_DIR" 2>/dev/null || echo "$SCRIPT_DIR")
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+
+if [ -z "$1" ]; then
+  echo "用法: bash publish/publish-work.sh <项目名>"
+  echo "示例: bash publish/publish-work.sh calendar-2027"
+  exit 1
+fi
+
+PROJECT_NAME="$1"
+PROJECT_DIR="$ROOT_DIR/$PROJECT_NAME"
+CONFIG="$PROJECT_DIR/publish-config.json"
+
+if [ ! -d "$PROJECT_DIR" ]; then
+  echo "ERROR: 项目目录 $PROJECT_DIR 不存在"
+  exit 1
+fi
 
 if [ ! -f "$CONFIG" ]; then
   echo "ERROR: 配置文件 $CONFIG 不存在"
   exit 1
 fi
 
-DOMAIN_ID=$(python -c "import json;print(json.load(open(r'$SCRIPT_DIR_WIN/publish-config.json'))['domainId'])")
-REGION=$(python -c "import json;print(json.load(open(r'$SCRIPT_DIR_WIN/publish-config.json'))['region'])")
-WORK_NAME=$(python -c "import json;print(json.load(open(r'$SCRIPT_DIR_WIN/publish-config.json'))['workName'])")
+SCRIPT_DIR_WIN=$(cygpath -m "$SCRIPT_DIR" 2>/dev/null || echo "$SCRIPT_DIR")
+CONFIG_WIN=$(cygpath -m "$CONFIG" 2>/dev/null || echo "$CONFIG")
+
+DOMAIN_ID=$(python -c "import json;print(json.load(open(r'$CONFIG_WIN'))['domainId'])")
+REGION=$(python -c "import json;print(json.load(open(r'$CONFIG_WIN'))['region'])")
+WORK_NAME=$(python -c "import json;print(json.load(open(r'$CONFIG_WIN'))['workName'])")
 
 echo "========================================"
 echo "  华为云作品展览馆发布脚本"
+echo "  项目: $PROJECT_NAME"
 echo "  作品: $WORK_NAME"
 echo "========================================"
+
+# 导出项目目录供 Python 脚本使用
+export PROJECT_DIR
 
 # --- 检查环境变量 ---
 if [ -z "$HUAWEICLOUD_SDK_AK" ] || [ -z "$HUAWEICLOUD_SDK_SK" ]; then
@@ -46,7 +67,7 @@ hcloud IAM CreateAgency \
   --agency.duration=FOREVER 2>/dev/null && echo "已创建" || echo "已存在"
 
 # --- 生成 STS 临时凭证 ---
-echo -n "[3'7] 生成 STS 临时凭证 ... "
+echo -n "[3/7] 生成 STS 临时凭证 ... "
 python "$SCRIPT_DIR/gen_sts.py" > /dev/null 2>&1 && echo "OK" || { echo "FAILED"; exit 1; }
 
 # --- 生成封面 ---
@@ -74,5 +95,5 @@ if [ "$PUBLISH_OK" = "1" ]; then
   echo "临时产物已自动清理。"
 else
   echo "发布失败，请检查上方错误信息。"
-  echo "临时产物保留在 publish/ 目录供-排查。"
+  echo "临时产物保留在 publish/ 目录供排查。"
 fi

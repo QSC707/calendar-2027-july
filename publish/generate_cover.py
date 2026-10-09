@@ -4,9 +4,13 @@ import asyncio, os, sys, json
 from playwright.async_api import async_playwright
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-project_dir = os.path.dirname(script_dir)
+project_dir = os.environ.get('PROJECT_DIR', '')
 
-with open(os.path.join(script_dir, "publish-config.json"), encoding="utf-8") as f:
+if not project_dir:
+    print("ERROR: PROJECT_DIR 环境变量未设置", file=sys.stderr)
+    sys.exit(1)
+
+with open(os.path.join(project_dir, "publish-config.json"), encoding="utf-8") as f:
     cfg = json.load(f)
 
 HTML_FILE = os.path.join(project_dir, cfg["htmlFile"])

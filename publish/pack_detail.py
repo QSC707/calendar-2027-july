@@ -3,7 +3,12 @@
 import zipfile, os, sys
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-project_dir = os.path.dirname(script_dir)
+project_dir = os.environ.get('PROJECT_DIR', '')
+
+if not project_dir:
+    print("ERROR: PROJECT_DIR 环境变量未设置", file=sys.stderr)
+    sys.exit(1)
+
 out_path = os.path.join(script_dir, "detail.zip")
 readme = os.path.join(project_dir, "README.md")
 resources_dir = os.path.join(project_dir, "resources")
