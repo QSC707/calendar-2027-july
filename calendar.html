@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2027年7月 · 日历</title>
+<title>2027 · 年历</title>
 <style>
   :root {
     --bg: #080808;
@@ -54,13 +54,13 @@
 
   .calendar {
     position: relative;
-    width: 440px;
+    width: 680px;
     background: rgba(10, 10, 12, 0.6);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--border);
     border-radius: 24px;
-    padding: 40px 36px 30px;
+    padding: 36px 32px 28px;
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.05) inset,
       0 30px 80px rgba(0, 0, 0, 0.6);
@@ -81,87 +81,185 @@
     50% { background-position: 0% 0%; }
   }
 
-  .header { margin-bottom: 28px; position: relative; }
-  .year-label {
-    font-size: 12px;
+  .clock {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    position: relative;
+  }
+  .clock-face {
+    width: 88px;
+    height: 88px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .clock-face svg { width: 100%; height: 100%; display: block; }
+  .clock-face::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.06) 0%, transparent 65%);
+    animation: clockBreathe 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes clockBreathe {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.04); }
+  }
+  .clock-hand {
+    transform-origin: 50px 50px;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .clock-hand.seconds { transition: none; }
+  .clock-tick { stroke: rgba(86, 86, 95, 0.5); }
+  .clock-tick.major { stroke: rgba(138, 143, 152, 0.7); }
+  .clock-numeral {
+    fill: var(--text-muted);
+    font-size: 6px;
+    font-weight: 500;
+    font-family: -apple-system, "SF Pro Display", "Inter", sans-serif;
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+  .clock-info { flex: 1; }
+  .clock-year {
+    font-size: 11px;
     color: var(--text-muted);
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
-  .title-row {
+  .clock-title {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    margin-bottom: 4px;
+  }
+  .clock-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+    letter-spacing: 0.12em;
+  }
+
+  .quarters {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .quarter {
+    position: relative;
+  }
+  .quarter-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .quarter-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.1em;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.15));
+    border: 1px solid rgba(99, 102, 241, 0.2);
+  }
+  .quarter-name {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .quarter-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+  .quarter-months {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .month {
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    padding: 12px 10px 10px;
+    transition: border-color 0.2s;
+  }
+  .month:hover { border-color: rgba(255, 255, 255, 0.08); }
+  .month-title {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
+    margin-bottom: 8px;
   }
-  .title {
-    font-size: 34px;
-    font-weight: 600;
-    letter-spacing: -0.03em;
-  }
-  .title-en {
+  .month-name {
     font-size: 13px;
-    color: var(--text-secondary);
-    letter-spacing: 0.18em;
+    font-weight: 600;
+    color: var(--text);
   }
-
-  .weekdays {
+  .month-name-en {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+  }
+  .month-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
   }
-  .weekday {
+  .month-weekday {
     text-align: center;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    letter-spacing: 0.05em;
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
   }
-  .weekday.we { color: var(--indigo); opacity: 0.75; }
-
-  .days {
+  .month-weekday.we { color: var(--indigo); opacity: 0.6; }
+  .month-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-    position: relative;
+    gap: 2px;
   }
-  .day {
+  .month-day {
     aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 15px;
+    font-size: 11px;
     font-variant-numeric: tabular-nums;
-    color: var(--text);
-    border-radius: 12px;
+    color: var(--text-secondary);
+    border-radius: 5px;
     border: 1px solid transparent;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .day.empty { cursor: default; pointer-events: none; }
-  .day.we { color: #B4B8C0; }
-  .day:hover:not(.empty) {
-    background: rgba(255, 255, 255, 0.05);
+  .month-day.empty { cursor: default; pointer-events: none; }
+  .month-day.we { color: #B4B8C0; }
+  .month-day.today {
+    color: var(--indigo);
+    font-weight: 600;
+  }
+  .month-day:hover:not(.empty) {
+    background: rgba(255, 255, 255, 0.06);
     border-color: var(--border-hover);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 0 18px rgba(99, 102, 241, 0.1);
   }
-  .day:active:not(.empty) {
-    transform: scale(0.95);
-  }
-  .day.selected {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3));
+  .month-day.selected {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.35));
     border-color: rgba(99, 102, 241, 0.55);
     color: #fff;
     font-weight: 600;
-    box-shadow: 0 0 24px rgba(99, 102, 241, 0.35), 0 0 48px rgba(168, 85, 247, 0.18), 0 1px 0 rgba(255, 255, 255, 0.1) inset;
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
   }
 
   .footer {
-    margin-top: 26px;
-    padding-top: 20px;
+    margin-top: 20px;
+    padding-top: 16px;
     border-top: 1px solid var(--border);
     display: flex;
     align-items: center;
@@ -185,59 +283,187 @@
 </head>
 <body>
   <div class="calendar">
-    <div class="header">
-      <div class="year-label">2027</div>
-      <div class="title-row">
-        <div class="title">七月</div>
-        <div class="title-en">JULY</div>
+    <div class="clock">
+      <div class="clock-face">
+        <svg viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="secGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#6366F1"/>
+              <stop offset="100%" stop-color="#A855F7"/>
+            </linearGradient>
+            <linearGradient id="handGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#EDEDEF"/>
+              <stop offset="100%" stop-color="#8A8F98"/>
+            </linearGradient>
+            <radialGradient id="dialGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="rgba(99,102,241,0.04)"/>
+              <stop offset="60%" stop-color="transparent"/>
+              <stop offset="100%" stop-color="rgba(168,85,247,0.03)"/>
+            </radialGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="1.5" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <circle cx="50" cy="50" r="48" fill="url(#dialGlow)"/>
+          <circle cx="50" cy="50" r="47" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="0.8"/>
+          <circle cx="50" cy="50" r="43.5" fill="none" stroke="rgba(255,255,255,0.025)" stroke-width="0.4"/>
+          <circle cx="50" cy="50" r="34" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.3" stroke-dasharray="1 3"/>
+          <g id="ticks"></g>
+          <text class="clock-numeral" x="50" y="11">12</text>
+          <text class="clock-numeral" x="89" y="50">3</text>
+          <text class="clock-numeral" x="50" y="89">6</text>
+          <text class="clock-numeral" x="11" y="50">9</text>
+          <g id="hourHand" class="clock-hand">
+            <polygon points="50,54 47.5,50 50,28 52.5,50" fill="url(#handGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="0.3"/>
+          </g>
+          <g id="minuteHand" class="clock-hand">
+            <polygon points="50,55 48.5,50 50,18 51.5,50" fill="#B4B8C0" stroke="rgba(255,255,255,0.08)" stroke-width="0.2"/>
+          </g>
+          <g id="secondHand" class="clock-hand seconds">
+            <line x1="50" y1="60" x2="50" y2="12" stroke="url(#secGrad)" stroke-width="0.8" stroke-linecap="round" filter="url(#glow)"/>
+            <circle cx="50" cy="16" r="1.5" fill="none" stroke="url(#secGrad)" stroke-width="0.6" filter="url(#glow)"/>
+          </g>
+          <circle cx="50" cy="50" r="3.5" fill="#0A0A0C" stroke="rgba(255,255,255,0.15)" stroke-width="0.4"/>
+          <circle cx="50" cy="50" r="1.8" fill="url(#secGrad)" opacity="0.9"/>
+          <circle cx="50" cy="50" r="0.6" fill="#EDEDEF"/>
+        </svg>
+      </div>
+      <div class="clock-info">
+        <div class="clock-year">2027 · ANNUAL CALENDAR</div>
+        <div class="clock-title">全年日历</div>
+        <div class="clock-date" id="clockDate">—</div>
       </div>
     </div>
-    <div class="weekdays">
-      <div class="weekday we">日</div>
-      <div class="weekday">一</div>
-      <div class="weekday">二</div>
-      <div class="weekday">三</div>
-      <div class="weekday">四</div>
-      <div class="weekday">五</div>
-      <div class="weekday we">六</div>
-    </div>
-    <div class="days" id="days"></div>
+    <div class="quarters" id="quarters"></div>
     <div class="footer">
-      <div class="selected-info" id="info"><strong>7月1日</strong> · 星期四</div>
+      <div class="selected-info" id="info"><strong>未选择日期</strong></div>
       <div class="dot"></div>
     </div>
   </div>
 <script>
-  const daysEl = document.getElementById('days');
+  const YEAR = 2027;
+  const monthNamesCN = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  const monthNamesEN = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const weekdayNames = ['日','一','二','三','四','五','六'];
+  const quarterNames = ['第一季度 · Q1','第二季度 · Q2','第三季度 · Q3','第四季度 · Q4'];
   const infoEl = document.getElementById('info');
-  const weekdayNames = ['日', '一', '二', '三', '四', '五', '六'];
-  const startWeekday = 4;
-  const totalDays = 31;
-  let selected = 1;
+  let selected = null;
 
-  function render() {
-    daysEl.innerHTML = '';
-    for (let i = 0; i < startWeekday; i++) {
-      const el = document.createElement('div');
-      el.className = 'day empty';
-      daysEl.appendChild(el);
-    }
-    for (let d = 1; d <= totalDays; d++) {
-      const el = document.createElement('div');
-      el.className = 'day';
-      const wd = (startWeekday + d - 1) % 7;
-      if (wd === 0 || wd === 6) el.classList.add('we');
-      if (d === selected) el.classList.add('selected');
-      el.textContent = d;
-      el.addEventListener('click', () => {
-        selected = d;
-        render();
-        infoEl.innerHTML = '<strong>7月' + d + '日</strong> · 星期' + weekdayNames[wd];
-      });
-      daysEl.appendChild(el);
+  function daysInMonth(year, month) {
+    return new Date(year, month + 1, 0).getDate();
+  }
+
+  function renderQuarters() {
+    const container = document.getElementById('quarters');
+    container.innerHTML = '';
+    for (let q = 0; q < 4; q++) {
+      const quarter = document.createElement('div');
+      quarter.className = 'quarter';
+      const header = document.createElement('div');
+      header.className = 'quarter-header';
+      header.innerHTML = '<span class="quarter-tag">Q' + (q + 1) + '</span><span class="quarter-name">' + quarterNames[q].split(' · ')[0] + '</span><span class="quarter-line"></span>';
+      quarter.appendChild(header);
+      const monthsWrap = document.createElement('div');
+      monthsWrap.className = 'quarter-months';
+      for (let m = 0; m < 3; m++) {
+        const monthIdx = q * 3 + m;
+        monthsWrap.appendChild(renderMonth(monthIdx));
+      }
+      quarter.appendChild(monthsWrap);
+      container.appendChild(quarter);
     }
   }
-  render();
+
+  function renderMonth(monthIdx) {
+    const month = document.createElement('div');
+    month.className = 'month';
+    const title = document.createElement('div');
+    title.className = 'month-title';
+    title.innerHTML = '<span class="month-name">' + monthNamesCN[monthIdx] + '</span><span class="month-name-en">' + monthNamesEN[monthIdx] + '</span>';
+    month.appendChild(title);
+    const weekdays = document.createElement('div');
+    weekdays.className = 'month-weekdays';
+    for (let w = 0; w < 7; w++) {
+      const wd = document.createElement('div');
+      wd.className = 'month-weekday' + (w === 0 || w === 6 ? ' we' : '');
+      wd.textContent = weekdayNames[w];
+      weekdays.appendChild(wd);
+    }
+    month.appendChild(weekdays);
+    const days = document.createElement('div');
+    days.className = 'month-days';
+    const firstDay = new Date(YEAR, monthIdx, 1).getDay();
+    const total = daysInMonth(YEAR, monthIdx);
+    for (let i = 0; i < firstDay; i++) {
+      const el = document.createElement('div');
+      el.className = 'month-day empty';
+      days.appendChild(el);
+    }
+    for (let d = 1; d <= total; d++) {
+      const el = document.createElement('div');
+      el.className = 'month-day';
+      const wd = (firstDay + d - 1) % 7;
+      if (wd === 0 || wd === 6) el.classList.add('we');
+      if (selected && selected.month === monthIdx && selected.day === d) el.classList.add('selected');
+      el.textContent = d;
+      el.addEventListener('click', () => {
+        selected = { month: monthIdx, day: d };
+        renderQuarters();
+        infoEl.innerHTML = '<strong>' + (monthIdx + 1) + '月' + d + '日</strong> · 星期' + weekdayNames[wd];
+      });
+      days.appendChild(el);
+    }
+    month.appendChild(days);
+    return month;
+  }
+
+  renderQuarters();
+
+  const hourHand = document.getElementById('hourHand');
+  const minuteHand = document.getElementById('minuteHand');
+  const secondHand = document.getElementById('secondHand');
+  const clockDateEl = document.getElementById('clockDate');
+  const ticksEl = document.getElementById('ticks');
+  const dayNames = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+
+  for (let i = 0; i < 60; i++) {
+    const angle = i * 6;
+    const isMajor = i % 5 === 0;
+    const isNumeral = i % 15 === 0;
+    if (isNumeral) continue;
+    const r1 = isMajor ? 39 : 40.5;
+    const r2 = 43.5;
+    const rad = (angle - 90) * Math.PI / 180;
+    const x1 = 50 + r1 * Math.cos(rad);
+    const y1 = 50 + r1 * Math.sin(rad);
+    const x2 = 50 + r2 * Math.cos(rad);
+    const y2 = 50 + r2 * Math.sin(rad);
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1.toFixed(2));
+    line.setAttribute('y1', y1.toFixed(2));
+    line.setAttribute('x2', x2.toFixed(2));
+    line.setAttribute('y2', y2.toFixed(2));
+    line.setAttribute('class', 'clock-tick' + (isMajor ? ' major' : ''));
+    line.setAttribute('stroke-width', isMajor ? '0.8' : '0.35');
+    ticksEl.appendChild(line);
+  }
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function tick() {
+    const now = new Date();
+    const h = now.getHours() % 12;
+    const m = now.getMinutes();
+    const s = now.getSeconds();
+    const ms = now.getMilliseconds();
+    hourHand.style.transform = 'rotate(' + ((h * 30) + (m * 0.5)) + 'deg)';
+    minuteHand.style.transform = 'rotate(' + ((m * 6) + (s * 0.1)) + 'deg)';
+    secondHand.style.transform = 'rotate(' + ((s * 6) + (ms * 0.006)) + 'deg)';
+    clockDateEl.textContent = now.getFullYear() + ' · ' + monthNamesEN[now.getMonth()] + ' ' + pad(now.getDate()) + ' · ' + dayNames[now.getDay()];
+  }
+  tick();
+  setInterval(tick, 50);
 </script>
 </body>
 </html>

@@ -2,3 +2,11 @@
 .claude/
 .codeartsdoer/
 skills-lock.json
+publish/sts-creds.json
+publish/cover.png
+publish/detail.zip
+publish/.preflight-marker
+publish/.utf8-marker
+__pycache__/
+*.pyc
+.DS_Store

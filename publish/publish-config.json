@@ -1,0 +1,10 @@
+{
+  "workName": "2027全年年历组件",
+  "introduction": "精致深色风格年历，含实时时钟、季度视图与十二月份平铺展示",
+  "gitUrl": "https://github.com/QSC707/calendar-2027-july.git",
+  "gitBranch": "master",
+  "campId": "e4c24564-04f0-42f0-8980-695fee23dcc3",
+  "htmlFile": "calendar.html",
+  "domainId": "057cc3d0d68010e60fb3c0075a0af360",
+  "region": "cn-north-4"
+}
