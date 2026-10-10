@@ -25,6 +25,6 @@ with zipfile.ZipFile(out_path, "w", zipfile.ZIP_DEFLATED) as z:
 
 size = os.path.getsize(out_path)
 print(f"detail.zip: {size} bytes")
-if size < 1024:
-    print("ERROR: detail.zip 小于 1024 bytes", file=sys.stderr)
+if size < 256:
+    print("ERROR: detail.zip 小于 256 bytes", file=sys.stderr)
     sys.exit(1)

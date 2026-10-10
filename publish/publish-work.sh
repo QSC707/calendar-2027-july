@@ -35,9 +35,9 @@ fi
 SCRIPT_DIR_WIN=$(cygpath -m "$SCRIPT_DIR" 2>/dev/null || echo "$SCRIPT_DIR")
 CONFIG_WIN=$(cygpath -m "$CONFIG" 2>/dev/null || echo "$CONFIG")
 
-DOMAIN_ID=$(python -c "import json;print(json.load(open(r'$CONFIG_WIN'))['domainId'])")
-REGION=$(python -c "import json;print(json.load(open(r'$CONFIG_WIN'))['region'])")
-WORK_NAME=$(python -c "import json;print(json.load(open(r'$CONFIG_WIN'))['workName'])")
+DOMAIN_ID=$(python -c "import json;print(json.load(open(r'$CONFIG_WIN',encoding='utf-8'))['domainId'])")
+REGION=$(python -c "import json;print(json.load(open(r'$CONFIG_WIN',encoding='utf-8'))['region'])")
+WORK_NAME=$(python -c "import json;print(json.load(open(r'$CONFIG_WIN',encoding='utf-8'))['workName'])")
 
 echo "========================================"
 echo "  华为云作品展览馆发布脚本"
@@ -45,7 +45,8 @@ echo "  项目: $PROJECT_NAME"
 echo "  作品: $WORK_NAME"
 echo "========================================"
 
-# 导出项目目录供 Python 脚本使用
+# 导出项目目录供 Python 脚本使用（转换为 Windows 路径格式）
+PROJECT_DIR=$(cygpath -m "$PROJECT_DIR" 2>/dev/null || echo "$PROJECT_DIR")
 export PROJECT_DIR
 
 # --- 检查环境变量 ---
