@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>二十四节气 · Solar Terms</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0A0A0F; --card:rgba(255,255,255,0.035); --card2:rgba(255,255,255,0.06);
+    --border:rgba(255,255,255,0.08); --text:#F0F0F5; --dim:#7A7A8A; --dim2:#4A4A5A;
+    --spring:#4ADE80; --spring2:#22C55E; --springGlow:rgba(74,222,128,.15);
+    --summer:#F87171; --summer2:#EF4444; --summerGlow:rgba(248,113,113,.15);
+    --autumn:#FBBF24; --autumn2:#F59E0B; --autumnGlow:rgba(251,191,36,.15);
+    --winter:#818CF8; --winter2:#6366F1; --winterGlow:rgba(129,140,248,.15);
+    --gold:#FBBF24;
+  }
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Segoe UI','SF Pro Display',system-ui,sans-serif;
+    min-height:100vh; overflow-x:hidden; letter-spacing:-0.01em;
+  }
+  body::before{
+    content:''; position:fixed; width:100%; height:100%; top:0; left:0;
+    background:radial-gradient(ellipse at 20% 0%,rgba(74,222,128,.04),transparent 50%),
+               radial-gradient(ellipse at 80% 30%,rgba(251,191,36,.03),transparent 50%),
+               radial-gradient(ellipse at 50% 100%,rgba(129,140,248,.04),transparent 50%);
+    pointer-events:none; z-index:0;
+  }
+
+  .app{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:28px 20px}
+
+  .header{text-align:center;margin-bottom:28px}
+  .header h1{
+    font-size:2rem;font-weight:800;letter-spacing:-0.04em;
+    background:linear-gradient(135deg,var(--spring),var(--gold),var(--autumn),var(--winter));
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    background-size:200% 200%; animation:gradShift 8s ease infinite;
+  }
+  @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .header p{font-size:.85rem;color:var(--dim);margin-top:6px;letter-spacing:.04em}
+  .header .subtitle{font-size:.7rem;color:var(--dim2);margin-top:2px;letter-spacing:.1em;text-transform:uppercase}
+
+  .current-card{
+    background:linear-gradient(135deg,var(--card2),var(--card));
+    border:1px solid var(--border); border-radius:24px; padding:24px;
+    backdrop-filter:blur(28px) saturate(1.2); -webkit-backdrop-filter:blur(28px) saturate(1.2);
+    box-shadow:0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);
+    margin-bottom:24px; position:relative; overflow:hidden; text-align:center;
+  }
+  .current-card::before{
+    content:''; position:absolute; top:0; left:-100%; width:50%; height:100%;
+    background:linear-gradient(105deg,transparent,rgba(255,255,255,.04),transparent);
+    animation:shimmer 8s infinite;
+  }
+  @keyframes shimmer{0%{left:-100%}100%{left:250%}}
+  .current-label{font-size:.7rem;color:var(--dim);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
+  .current-name{font-size:2.2rem;font-weight:900;letter-spacing:-0.03em;margin-bottom:4px}
+  .current-poem{font-size:.9rem;color:var(--dim);margin-bottom:12px;font-style:italic}
+  .current-meta{display:flex;justify-content:center;gap:20px;font-size:.78rem}
+  .current-meta span{display:flex;align-items:center;gap:4px}
+  .current-meta .dot{width:4px;height:4px;border-radius:50%}
+
+  .season-section{margin-bottom:24px}
+  .season-header{
+    display:flex;align-items:center;gap:12px;margin-bottom:12px;
+  }
+  .season-icon{
+    width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:1.1rem; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  }
+  .season-title{font-size:1.1rem;font-weight:700;letter-spacing:-0.02em}
+  .season-sub{font-size:.7rem;color:var(--dim);letter-spacing:.05em}
+  .season-line{flex:1;height:1px;background:var(--border)}
+
+  .terms-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:600px){.terms-grid{grid-template-columns:repeat(2,1fr)}}
+
+  .term-card{
+    background:var(--card); border:1px solid var(--border); border-radius:16px; padding:14px;
+    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    transition:all .3s cubic-bezier(.4,0,.2,1); position:relative; overflow:hidden;
+    cursor:default;
+  }
+  .term-card:hover{transform:translateY(-3px); border-color:rgba(255,255,255,.15)}
+  .term-card::after{
+    content:''; position:absolute; inset:0; border-radius:16px; opacity:0;
+    transition:opacity .3s; pointer-events:none;
+  }
+  .term-card:hover::after{opacity:1}
+
+  .term-card.spring{--c:var(--spring);--cg:var(--springGlow)}
+  .term-card.summer{--c:var(--summer);--cg:var(--summerGlow)}
+  .term-card.autumn{--c:var(--autumn);--cg:var(--autumnGlow)}
+  .term-card.winter{--c:var(--winter);--cg:var(--winterGlow)}
+  .term-card:hover{box-shadow:0 8px 32px var(--cg)}
+
+  .term-name{font-size:1.15rem;font-weight:800;letter-spacing:-0.02em;color:var(--c);margin-bottom:2px}
+  .term-date{font-size:.68rem;color:var(--dim);margin-bottom:8px;font-variant-numeric:tabular-nums}
+  .term-poem{font-size:.75rem;color:var(--text);opacity:.7;line-height:1.5}
+
+  .term-card.current{
+    border-color:var(--c);
+    box-shadow:0 0 24px var(--cg),inset 0 0 20px var(--cg);
+  }
+  .term-card.current .term-name{text-shadow:0 0 12px var(--c)}
+  .term-card.current::before{
+    content:'今'; position:absolute; top:8px; right:8px;
+    width:18px; height:18px; border-radius:50%;
+    background:var(--c); color:var(--bg); font-size:.65rem; font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .wheel-section{
+    background:var(--card); border:1px solid var(--border); border-radius:24px; padding:20px;
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); margin-bottom:24px;
+    text-align:center;
+  }
+  .wheel-title{font-size:.8rem;color:var(--dim);margin-bottom:12px;letter-spacing:.05em}
+  .wheel-svg{width:100%;max-width:360px;height:auto;display:block;margin:0 auto}
+
+  .footer{text-align:center;font-size:.68rem;color:var(--dim2);letter-spacing:.03em;padding:8px 0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>二十四节气</h1>
+    <p>春雨惊春清谷天 · 夏满芒夏暑相连</p>
+    <p class="subtitle">秋处露秋寒霜降 · 冬雪雪冬小大寒</p>
+  </div>
+
+  <div class="current-card" id="current-card">
+    <div class="current-label">当前节气</div>
+    <div class="current-name" id="current-name">—</div>
+    <div class="current-poem" id="current-poem">—</div>
+    <div class="current-meta">
+      <span><span class="dot" id="current-dot"></span><span id="current-season">—</span></span>
+      <span><span id="current-date">—</span></span>
+      <span><span id="current-days">—</span></span>
+    </div>
+  </div>
+
+  <div class="wheel-section">
+    <div class="wheel-title">节气轮盘</div>
+    <svg class="wheel-svg" id="wheel-svg" viewBox="0 0 400 400"></svg>
+  </div>
+
+  <div id="seasons-container"></div>
+
+  <div class="footer">二十四节气 · 中国第五大发明 · 联合国教科文组织人类非物质文化遗产</div>
+</div>
+
+<script>
+const SEASONS = [
+  {key:'spring',name:'春',icon:'🌱',sub:'万物复苏 · 六节气',color:'#4ADE80',terms:[
+    {name:'立春',date:'2月3-5日',poem:'东风解冻，蛰虫始振，鱼陟负冰'},
+    {name:'雨水',date:'2月18-20日',poem:'獭祭鱼，候雁北，草木萌动'},
+    {name:'惊蛰',date:'3月5-7日',poem:'桃始华，仓庚鸣，鹰化为鸠'},
+    {name:'春分',date:'3月20-22日',poem:'玄鸟至，雷乃发声，始电'},
+    {name:'清明',date:'4月4-6日',poem:'桐始华，田鼠化为鴽，虹始见'},
+    {name:'谷雨',date:'4月19-21日',poem:'萍始生，鸣鸠拂其羽，戴胜降于桑'},
+  ]},
+  {key:'summer',name:'夏',icon:'☀️',sub:'万物繁茂 · 六节气',color:'#F87171',terms:[
+    {name:'立夏',date:'5月5-7日',poem:'蝼蝈鸣，蚯蚓出，王瓜生'},
+    {name:'小满',date:'5月20-22日',poem:'苦菜秀，靡草死，麦秋至'},
+    {name:'芒种',date:'6月5-7日',poem:'螳螂生，鵙始鸣，反舌无声'},
+    {name:'夏至',date:'6月21-22日',poem:'鹿角解，蜩始鸣，半夏生'},
+    {name:'小暑',date:'7月6-8日',poem:'温风至，蟋蟀居壁，鹰乃学习'},
+    {name:'大暑',date:'7月22-24日',poem:'腐草化萤，土润溽暑，大雨时行'},
+  ]},
+  {key:'autumn',name:'秋',icon:'🍂',sub:'万物收成 · 六节气',color:'#FBBF24',terms:[
+    {name:'立秋',date:'8月7-9日',poem:'凉风至，白露降，寒蝉鸣'},
+    {name:'处暑',date:'8月22-24日',poem:'鹰乃祭鸟，天地始肃，禾乃登'},
+    {name:'白露',date:'9月7-9日',poem:'鸿雁来，玄鸟归，群鸟养羞'},
+    {name:'秋分',date:'9月22-24日',poem:'雷始收声，蛰虫坯户，水始涸'},
+    {name:'寒露',date:'10月8-9日',poem:'鸿雁来宾，雀入大水为蛤，菊有黄华'},
+    {name:'霜降',date:'10月23-24日',poem:'豺乃祭兽，草木黄落，蛰虫咸俯'},
+  ]},
+  {key:'winter',name:'冬',icon:'❄️',sub:'万物收藏 · 六节气',color:'#818CF8',terms:[
+    {name:'立冬',date:'11月7-8日',poem:'水始冰，地始冻，雉入大水为蜃'},
+    {name:'小雪',date:'11月22-23日',poem:'虹藏不见，天气上腾地气下降，闭塞而成冬'},
+    {name:'大雪',date:'12月6-8日',poem:'鹖鴠不鸣，虎始交，荔挺出'},
+    {name:'冬至',date:'12月21-23日',poem:'蚯蚓结，麋角解，水泉动'},
+    {name:'小寒',date:'1月5-7日',poem:'雁北乡，鹊始巢，雉始鸲'},
+    {name:'大寒',date:'1月20-21日',poem:'鸡始乳，征鸟厉疾，水泽腹坚'},
+  ]},
+];
+
+const TERM_DATES = [
+  {m:2,d:4},{m:2,d:19},{m:3,d:6},{m:3,d:21},{m:4,d:5},{m:4,d:20},
+  {m:5,d:6},{m:5,d:21},{m:6,d:6},{m:6,d:21},{m:7,d:7},{m:7,d:23},
+  {m:8,d:8},{m:8,d:23},{m:9,d:8},{m:9,d:23},{m:10,d:8},{m:10,d:24},
+  {m:11,d:7},{m:11,d:22},{m:12,d:7},{m:12,d:22},{m:1,d:6},{m:1,d:20},
+];
+
+function getCurrentTermIdx(){
+  const now=new Date(), m=now.getMonth()+1, d=now.getDate();
+  let idx=0;
+  for(let i=0;i<TERM_DATES.length;i++){
+    const t=TERM_DATES[i];
+    if(m>t.m||(m===t.m&&d>=t.d)) idx=i;
+  }
+  if(m>=12&&d>=22) idx=21;
+  if(m===1&&d<20) idx=23;
+  return idx;
+}
+
+function getAllTerms(){
+  const all=[];
+  SEASONS.forEach(s=>s.terms.forEach(t=>all.push({...t,season:s})));
+  return all;
+}
+
+function renderCurrent(){
+  const idx=getCurrentTermIdx();
+  const all=getAllTerms();
+  const t=all[idx];
+  const card=document.getElementById('current-card');
+  card.style.borderColor=t.season.color+'40';
+  card.style.boxShadow=`0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06),0 0 40px ${t.season.color}15`;
+
+  document.getElementById('current-name').textContent=t.name;
+  document.getElementById('current-name').style.color=t.season.color;
+  document.getElementById('current-poem').textContent=t.poem;
+  document.getElementById('current-season').textContent=t.season.name+'季';
+  document.getElementById('current-date').textContent=t.date;
+  document.getElementById('current-dot').style.background=t.season.color;
+  document.getElementById('current-dot').style.boxShadow=`0 0 6px ${t.season.color}`;
+
+  const next=TERM_DATES[(idx+1)%24];
+  const now=new Date();
+  const nextDate=new Date(now.getFullYear(),next.m-1,next.d);
+  if(nextDate<now) nextDate.setFullYear(now.getFullYear()+1);
+  const days=Math.ceil((nextDate-now)/86400000);
+  document.getElementById('current-days').textContent=`距下一节气 ${days} 天`;
+}
+
+function renderSeasons(){
+  const container=document.getElementById('seasons-container');
+  const currentIdx=getCurrentTermIdx();
+  let termCounter=0;
+  let html='';
+  SEASONS.forEach(season=>{
+    html+=`<div class="season-section">
+      <div class="season-header">
+        <div class="season-icon" style="background:${season.color}20;border:1px solid ${season.color}30">${season.icon}</div>
+        <div><div class="season-title" style="color:${season.color}">${season.name}季</div><div class="season-sub">${season.sub}</div></div>
+        <div class="season-line" style="background:linear-gradient(90deg,${season.color}30,transparent)"></div>
+      </div>
+      <div class="terms-grid">`;
+    season.terms.forEach(term=>{
+      const isCurrent=termCounter===currentIdx;
+      html+=`<div class="term-card ${season.key}${isCurrent?' current':''}">
+        <div class="term-name">${term.name}</div>
+        <div class="term-date">${term.date}</div>
+        <div class="term-poem">${term.poem}</div>
+      </div>`;
+      termCounter++;
+    });
+    html+=`</div></div>`;
+  });
+  container.innerHTML=html;
+}
+
+function renderWheel(){
+  const svg=document.getElementById('wheel-svg');
+  const cx=200,cy=200,r=130;
+  const all=getAllTerms();
+  const currentIdx=getCurrentTermIdx();
+  let html='';
+
+  // 外圈
+  html+=`<circle cx="${cx}" cy="${cy}" r="${r+20}" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1"/>`;
+  html+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`;
+
+  // 中心
+  html+=`<circle cx="${cx}" cy="${cy}" r="40" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`;
+  const current=all[currentIdx];
+  html+=`<text x="${cx}" y="${cy-6}" text-anchor="middle" fill="${current.season.color}" font-size="18" font-weight="800">${current.name}</text>`;
+  html+=`<text x="${cx}" y="${cy+12}" text-anchor="middle" fill="#7A7A8A" font-size="9">${current.date}</text>`;
+
+  // 24等分扇形 + 节气名
+  for(let i=0;i<24;i++){
+    const angle1=(i/24)*Math.PI*2-Math.PI/2;
+    const angle2=((i+1)/24)*Math.PI*2-Math.PI/2;
+    const midAngle=(angle1+angle2)/2;
+    const t=all[i];
+    const isCurrent=i===currentIdx;
+
+    // 扇形
+    const x1=cx+Math.cos(angle1)*r, y1=cy+Math.sin(angle1)*r;
+    const x2=cx+Math.cos(angle2)*r, y2=cy+Math.sin(angle2)*r;
+    const xi1=cx+Math.cos(angle1)*(r-30), yi1=cy+Math.sin(angle1)*(r-30);
+    const xi2=cx+Math.cos(angle2)*(r-30), yi2=cy+Math.sin(angle2)*(r-30);
+
+    const opacity=isCurrent?.25:.08;
+    html+=`<path d="M ${xi1} ${yi1} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} L ${xi2} ${yi2} Z" fill="${t.season.color}" opacity="${opacity}"/>`;
+
+    // 分隔线
+    html+=`<line x1="${xi1}" y1="${yi1}" x2="${x1}" y2="${y1}" stroke="rgba(255,255,255,.06)" stroke-width="1"/>`;
+
+    // 节气名
+    const labelR=r-15;
+    const lx=cx+Math.cos(midAngle)*labelR;
+    const ly=cy+Math.sin(midAngle)*labelR;
+    const fontSize=isCurrent?11:8;
+    const fontWeight=isCurrent?700:500;
+    const fill=isCurrent?t.season.color:'rgba(255,255,255,.5)';
+    html+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="${fill}" font-size="${fontSize}" font-weight="${fontWeight}">${t.name}</text>`;
+
+    // 当前节气指示点
+    if(isCurrent){
+      const dotR=r+8;
+      const dx=cx+Math.cos(midAngle)*dotR;
+      const dy=cy+Math.sin(midAngle)*dotR;
+      html+=`<circle cx="${dx}" cy="${dy}" r="4" fill="${t.season.color}"/>`;
+      html+=`<circle cx="${dx}" cy="${dy}" r="8" fill="${t.season.color}" opacity=".3"/>`;
+    }
+  }
+
+  // 季节标签
+  const seasonLabels=[
+    {label:'春',angle:-Math.PI/2+Math.PI/4,color:'#4ADE80'},
+    {label:'夏',angle:Math.PI/4,color:'#F87171'},
+    {label:'秋',angle:Math.PI/2+Math.PI/4,color:'#FBBF24'},
+    {label:'冬',angle:Math.PI+Math.PI/4,color:'#818CF8'},
+  ];
+  seasonLabels.forEach(s=>{
+    const lx=cx+Math.cos(s.angle)*(r+35);
+    const ly=cy+Math.sin(s.angle)*(r+35);
+    html+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="${s.color}" font-size="14" font-weight="700" opacity=".6">${s.label}</text>`;
+  });
+
+  svg.innerHTML=html;
+}
+
+renderCurrent();
+renderSeasons();
+renderWheel();
+</script>
+</body>
+</html>
