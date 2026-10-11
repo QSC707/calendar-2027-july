@@ -9,10 +9,7 @@
   :root{
     --bg:#0A0A0F; --card:rgba(255,255,255,0.035); --card2:rgba(255,255,255,0.06);
     --border:rgba(255,255,255,0.08); --text:#F0F0F5; --dim:#7A7A8A; --dim2:#4A4A5A;
-    --spring:#4ADE80; --spring2:#22C55E; --springGlow:rgba(74,222,128,.15);
-    --summer:#F87171; --summer2:#EF4444; --summerGlow:rgba(248,113,113,.15);
-    --autumn:#FBBF24; --autumn2:#F59E0B; --autumnGlow:rgba(251,191,36,.15);
-    --winter:#818CF8; --winter2:#6366F1; --winterGlow:rgba(129,140,248,.15);
+    --spring:#4ADE80; --summer:#F87171; --autumn:#FBBF24; --winter:#818CF8;
     --gold:#FBBF24;
   }
   body{
@@ -28,9 +25,17 @@
     pointer-events:none; z-index:0;
   }
 
+  .ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .petal{position:absolute;animation:fall linear infinite;opacity:0}
+  @keyframes fall{
+    0%{transform:translateY(-10vh) translateX(0) rotate(0); opacity:0}
+    10%{opacity:.5} 90%{opacity:.5}
+    100%{transform:translateY(110vh) translateX(60px) rotate(360deg); opacity:0}
+  }
+
   .app{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:28px 20px}
 
-  .header{text-align:center;margin-bottom:28px}
+  .header{text-align:center;margin-bottom:24px}
   .header h1{
     font-size:2rem;font-weight:800;letter-spacing:-0.04em;
     background:linear-gradient(135deg,var(--spring),var(--gold),var(--autumn),var(--winter));
@@ -38,15 +43,15 @@
     background-size:200% 200%; animation:gradShift 8s ease infinite;
   }
   @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-  .header p{font-size:.85rem;color:var(--dim);margin-top:6px;letter-spacing:.04em}
-  .header .subtitle{font-size:.7rem;color:var(--dim2);margin-top:2px;letter-spacing:.1em;text-transform:uppercase}
+  .header .poem{font-size:.85rem;color:var(--dim);margin-top:6px;letter-spacing:.06em}
+  .header .poem2{font-size:.7rem;color:var(--dim2);margin-top:2px;letter-spacing:.12em;text-transform:uppercase}
 
   .current-card{
     background:linear-gradient(135deg,var(--card2),var(--card));
     border:1px solid var(--border); border-radius:24px; padding:24px;
     backdrop-filter:blur(28px) saturate(1.2); -webkit-backdrop-filter:blur(28px) saturate(1.2);
     box-shadow:0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);
-    margin-bottom:24px; position:relative; overflow:hidden; text-align:center;
+    margin-bottom:20px; position:relative; overflow:hidden; text-align:center;
   }
   .current-card::before{
     content:''; position:absolute; top:0; left:-100%; width:50%; height:100%;
@@ -54,24 +59,38 @@
     animation:shimmer 8s infinite;
   }
   @keyframes shimmer{0%{left:-100%}100%{left:250%}}
-  .current-label{font-size:.7rem;color:var(--dim);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
-  .current-name{font-size:2.2rem;font-weight:900;letter-spacing:-0.03em;margin-bottom:4px}
-  .current-poem{font-size:.9rem;color:var(--dim);margin-bottom:12px;font-style:italic}
-  .current-meta{display:flex;justify-content:center;gap:20px;font-size:.78rem}
-  .current-meta span{display:flex;align-items:center;gap:4px}
-  .current-meta .dot{width:4px;height:4px;border-radius:50%}
-
-  .season-section{margin-bottom:24px}
-  .season-header{
-    display:flex;align-items:center;gap:12px;margin-bottom:12px;
+  .current-label{font-size:.68rem;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px}
+  .current-name{font-size:2.4rem;font-weight:900;letter-spacing:-0.03em;margin-bottom:4px;transition:color .3s}
+  .current-poem{font-size:.88rem;color:var(--dim);margin-bottom:14px;font-style:italic;letter-spacing:.02em}
+  .current-meta{display:flex;justify-content:center;gap:24px;font-size:.76rem;flex-wrap:wrap}
+  .current-meta span{display:flex;align-items:center;gap:5px}
+  .current-meta .dot{width:5px;height:5px;border-radius:50%;transition:all .3s}
+  .current-num{
+    position:absolute; top:16px; left:16px; font-size:.7rem; color:var(--dim);
+    font-variant-numeric:tabular-nums; letter-spacing:.05em;
   }
+
+  .wheel-section{
+    background:var(--card); border:1px solid var(--border); border-radius:24px; padding:20px;
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); margin-bottom:24px;
+    text-align:center; position:relative;
+  }
+  .wheel-title{font-size:.75rem;color:var(--dim);margin-bottom:8px;letter-spacing:.08em}
+  .wheel-hint{font-size:.65rem;color:var(--dim2);margin-bottom:12px;letter-spacing:.03em}
+  .wheel-svg{width:100%;max-width:380px;height:auto;display:block;margin:0 auto}
+  .wheel-svg .sector{cursor:pointer;transition:opacity .3s}
+  .wheel-svg .sector:hover{opacity:.3!important}
+  .wheel-svg .sector-label{cursor:pointer;transition:all .3s}
+
+  .season-section{margin-bottom:20px}
+  .season-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
   .season-icon{
-    width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-    font-size:1.1rem; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:1.15rem; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
   }
   .season-title{font-size:1.1rem;font-weight:700;letter-spacing:-0.02em}
-  .season-sub{font-size:.7rem;color:var(--dim);letter-spacing:.05em}
-  .season-line{flex:1;height:1px;background:var(--border)}
+  .season-sub{font-size:.68rem;color:var(--dim);letter-spacing:.05em}
+  .season-line{flex:1;height:1px}
 
   .terms-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
   @media(max-width:600px){.terms-grid{grid-template-columns:repeat(2,1fr)}}
@@ -80,57 +99,52 @@
     background:var(--card); border:1px solid var(--border); border-radius:16px; padding:14px;
     backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
     transition:all .3s cubic-bezier(.4,0,.2,1); position:relative; overflow:hidden;
-    cursor:default;
   }
   .term-card:hover{transform:translateY(-3px); border-color:rgba(255,255,255,.15)}
-  .term-card::after{
-    content:''; position:absolute; inset:0; border-radius:16px; opacity:0;
-    transition:opacity .3s; pointer-events:none;
+  .term-card.spring{--c:var(--spring)}
+  .term-card.summer{--c:var(--summer)}
+  .term-card.autumn{--c:var(--autumn)}
+  .term-card.winter{--c:var(--winter)}
+  .term-card:hover{box-shadow:0 8px 32px color-mix(in srgb,var(--c) 15%,transparent)}
+
+  .term-num{
+    position:absolute; top:10px; right:10px; font-size:.6rem; color:var(--dim2);
+    font-variant-numeric:tabular-nums; opacity:.5;
   }
-  .term-card:hover::after{opacity:1}
-
-  .term-card.spring{--c:var(--spring);--cg:var(--springGlow)}
-  .term-card.summer{--c:var(--summer);--cg:var(--summerGlow)}
-  .term-card.autumn{--c:var(--autumn);--cg:var(--autumnGlow)}
-  .term-card.winter{--c:var(--winter);--cg:var(--winterGlow)}
-  .term-card:hover{box-shadow:0 8px 32px var(--cg)}
-
-  .term-name{font-size:1.15rem;font-weight:800;letter-spacing:-0.02em;color:var(--c);margin-bottom:2px}
-  .term-date{font-size:.68rem;color:var(--dim);margin-bottom:8px;font-variant-numeric:tabular-nums}
-  .term-poem{font-size:.75rem;color:var(--text);opacity:.7;line-height:1.5}
+  .term-name{font-size:1.15rem;font-weight:800;letter-spacing:-0.02em;color:var(--c);margin-bottom:2px;transition:text-shadow .3s}
+  .term-date{font-size:.66rem;color:var(--dim);margin-bottom:8px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+  .term-poem{font-size:.73rem;color:var(--text);opacity:.65;line-height:1.5}
 
   .term-card.current{
     border-color:var(--c);
-    box-shadow:0 0 24px var(--cg),inset 0 0 20px var(--cg);
+    box-shadow:0 0 24px color-mix(in srgb,var(--c) 15%,transparent),inset 0 0 20px color-mix(in srgb,var(--c) 8%,transparent);
+    animation:currentPulse 3s ease-in-out infinite;
   }
-  .term-card.current .term-name{text-shadow:0 0 12px var(--c)}
+  @keyframes currentPulse{0%,100%{box-shadow:0 0 24px color-mix(in srgb,var(--c) 12%,transparent),inset 0 0 20px color-mix(in srgb,var(--c) 6%,transparent)}50%{box-shadow:0 0 36px color-mix(in srgb,var(--c) 20%,transparent),inset 0 0 28px color-mix(in srgb,var(--c) 10%,transparent)}}
+  .term-card.current .term-name{text-shadow:0 0 14px var(--c)}
   .term-card.current::before{
-    content:'今'; position:absolute; top:8px; right:8px;
-    width:18px; height:18px; border-radius:50%;
-    background:var(--c); color:var(--bg); font-size:.65rem; font-weight:900;
+    content:'今'; position:absolute; top:8px; left:8px;
+    width:20px; height:20px; border-radius:50%;
+    background:var(--c); color:var(--bg); font-size:.68rem; font-weight:900;
     display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 12px var(--c);
   }
+  .term-card.current .term-num{left:10px;right:auto;opacity:0}
 
-  .wheel-section{
-    background:var(--card); border:1px solid var(--border); border-radius:24px; padding:20px;
-    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); margin-bottom:24px;
-    text-align:center;
-  }
-  .wheel-title{font-size:.8rem;color:var(--dim);margin-bottom:12px;letter-spacing:.05em}
-  .wheel-svg{width:100%;max-width:360px;height:auto;display:block;margin:0 auto}
-
-  .footer{text-align:center;font-size:.68rem;color:var(--dim2);letter-spacing:.03em;padding:8px 0}
+  .footer{text-align:center;font-size:.66rem;color:var(--dim2);letter-spacing:.04em;padding:8px 0}
 </style>
 </head>
 <body>
+<div class="ambient" id="ambient"></div>
 <div class="app">
   <div class="header">
     <h1>二十四节气</h1>
-    <p>春雨惊春清谷天 · 夏满芒夏暑相连</p>
-    <p class="subtitle">秋处露秋寒霜降 · 冬雪雪冬小大寒</p>
+    <p class="poem">春雨惊春清谷天 · 夏满芒夏暑相连</p>
+    <p class="poem2">秋处露秋寒霜降 · 冬雪雪冬小大寒</p>
   </div>
 
   <div class="current-card" id="current-card">
+    <div class="current-num" id="current-num">No.01 / 24</div>
     <div class="current-label">当前节气</div>
     <div class="current-name" id="current-name">—</div>
     <div class="current-poem" id="current-poem">—</div>
@@ -143,6 +157,7 @@
 
   <div class="wheel-section">
     <div class="wheel-title">节气轮盘</div>
+    <div class="wheel-hint">悬停扇形查看节气详情</div>
     <svg class="wheel-svg" id="wheel-svg" viewBox="0 0 400 400"></svg>
   </div>
 
@@ -153,7 +168,7 @@
 
 <script>
 const SEASONS = [
-  {key:'spring',name:'春',icon:'🌱',sub:'万物复苏 · 六节气',color:'#4ADE80',terms:[
+  {key:'spring',name:'春',icon:'🌱',sub:'万物复苏 · 六节气',color:'#4ADE80',petal:'🌸',terms:[
     {name:'立春',date:'2月3-5日',poem:'东风解冻，蛰虫始振，鱼陟负冰'},
     {name:'雨水',date:'2月18-20日',poem:'獭祭鱼，候雁北，草木萌动'},
     {name:'惊蛰',date:'3月5-7日',poem:'桃始华，仓庚鸣，鹰化为鸠'},
@@ -161,7 +176,7 @@ const SEASONS = [
     {name:'清明',date:'4月4-6日',poem:'桐始华，田鼠化为鴽，虹始见'},
     {name:'谷雨',date:'4月19-21日',poem:'萍始生，鸣鸠拂其羽，戴胜降于桑'},
   ]},
-  {key:'summer',name:'夏',icon:'☀️',sub:'万物繁茂 · 六节气',color:'#F87171',terms:[
+  {key:'summer',name:'夏',icon:'☀️',sub:'万物繁茂 · 六节气',color:'#F87171',petal:'✨',terms:[
     {name:'立夏',date:'5月5-7日',poem:'蝼蝈鸣，蚯蚓出，王瓜生'},
     {name:'小满',date:'5月20-22日',poem:'苦菜秀，靡草死，麦秋至'},
     {name:'芒种',date:'6月5-7日',poem:'螳螂生，鵙始鸣，反舌无声'},
@@ -169,7 +184,7 @@ const SEASONS = [
     {name:'小暑',date:'7月6-8日',poem:'温风至，蟋蟀居壁，鹰乃学习'},
     {name:'大暑',date:'7月22-24日',poem:'腐草化萤，土润溽暑，大雨时行'},
   ]},
-  {key:'autumn',name:'秋',icon:'🍂',sub:'万物收成 · 六节气',color:'#FBBF24',terms:[
+  {key:'autumn',name:'秋',icon:'🍂',sub:'万物收成 · 六节气',color:'#FBBF24',petal:'🍁',terms:[
     {name:'立秋',date:'8月7-9日',poem:'凉风至，白露降，寒蝉鸣'},
     {name:'处暑',date:'8月22-24日',poem:'鹰乃祭鸟，天地始肃，禾乃登'},
     {name:'白露',date:'9月7-9日',poem:'鸿雁来，玄鸟归，群鸟养羞'},
@@ -177,7 +192,7 @@ const SEASONS = [
     {name:'寒露',date:'10月8-9日',poem:'鸿雁来宾，雀入大水为蛤，菊有黄华'},
     {name:'霜降',date:'10月23-24日',poem:'豺乃祭兽，草木黄落，蛰虫咸俯'},
   ]},
-  {key:'winter',name:'冬',icon:'❄️',sub:'万物收藏 · 六节气',color:'#818CF8',terms:[
+  {key:'winter',name:'冬',icon:'❄️',sub:'万物收藏 · 六节气',color:'#818CF8',petal:'❄️',terms:[
     {name:'立冬',date:'11月7-8日',poem:'水始冰，地始冻，雉入大水为蜃'},
     {name:'小雪',date:'11月22-23日',poem:'虹藏不见，天气上腾地气下降，闭塞而成冬'},
     {name:'大雪',date:'12月6-8日',poem:'鹖鴠不鸣，虎始交，荔挺出'},
@@ -195,7 +210,7 @@ const TERM_DATES = [
 ];
 
 function getCurrentTermIdx(){
-  const now=new Date(), m=now.getMonth()+1, d=now.getDate();
+  const now=new Date(),m=now.getMonth()+1,d=now.getDate();
   let idx=0;
   for(let i=0;i<TERM_DATES.length;i++){
     const t=TERM_DATES[i];
@@ -212,28 +227,46 @@ function getAllTerms(){
   return all;
 }
 
-function renderCurrent(){
-  const idx=getCurrentTermIdx();
+let hoveredIdx=-1;
+
+function updateCenter(idx){
   const all=getAllTerms();
   const t=all[idx];
+  const nameEl=document.getElementById('current-name');
+  const poemEl=document.getElementById('current-poem');
+  const seasonEl=document.getElementById('current-season');
+  const dateEl=document.getElementById('current-date');
+  const dotEl=document.getElementById('current-dot');
+  const numEl=document.getElementById('current-num');
+  const daysEl=document.getElementById('current-days');
   const card=document.getElementById('current-card');
+
+  nameEl.textContent=t.name;
+  nameEl.style.color=t.season.color;
+  poemEl.textContent=t.poem;
+  seasonEl.textContent=t.season.name+'季';
+  dateEl.textContent=t.date;
+  dotEl.style.background=t.season.color;
+  dotEl.style.boxShadow=`0 0 8px ${t.season.color}`;
+  numEl.textContent=`No.${String(idx+1).padStart(2,'0')} / 24`;
   card.style.borderColor=t.season.color+'40';
   card.style.boxShadow=`0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06),0 0 40px ${t.season.color}15`;
 
-  document.getElementById('current-name').textContent=t.name;
-  document.getElementById('current-name').style.color=t.season.color;
-  document.getElementById('current-poem').textContent=t.poem;
-  document.getElementById('current-season').textContent=t.season.name+'季';
-  document.getElementById('current-date').textContent=t.date;
-  document.getElementById('current-dot').style.background=t.season.color;
-  document.getElementById('current-dot').style.boxShadow=`0 0 6px ${t.season.color}`;
+  const currentIdx=getCurrentTermIdx();
+  if(idx===currentIdx){
+    const next=TERM_DATES[(idx+1)%24];
+    const now=new Date();
+    const nextDate=new Date(now.getFullYear(),next.m-1,next.d);
+    if(nextDate<now) nextDate.setFullYear(now.getFullYear()+1);
+    const days=Math.ceil((nextDate-now)/86400000);
+    daysEl.textContent=`距下一节气 ${days} 天`;
+  } else {
+    daysEl.textContent=`第 ${idx+1} 个节气`;
+  }
+}
 
-  const next=TERM_DATES[(idx+1)%24];
-  const now=new Date();
-  const nextDate=new Date(now.getFullYear(),next.m-1,next.d);
-  if(nextDate<now) nextDate.setFullYear(now.getFullYear()+1);
-  const days=Math.ceil((nextDate-now)/86400000);
-  document.getElementById('current-days').textContent=`距下一节气 ${days} 天`;
+function renderCurrent(){
+  updateCenter(getCurrentTermIdx());
 }
 
 function renderSeasons(){
@@ -251,7 +284,9 @@ function renderSeasons(){
       <div class="terms-grid">`;
     season.terms.forEach(term=>{
       const isCurrent=termCounter===currentIdx;
-      html+=`<div class="term-card ${season.key}${isCurrent?' current':''}">
+      const idx=termCounter;
+      html+=`<div class="term-card ${season.key}${isCurrent?' current':''}" data-idx="${idx}" onmouseenter="onCardHover(${idx})" onmouseleave="onCardLeave()">
+        <div class="term-num">${String(idx+1).padStart(2,'0')}</div>
         <div class="term-name">${term.name}</div>
         <div class="term-date">${term.date}</div>
         <div class="term-poem">${term.poem}</div>
@@ -263,24 +298,43 @@ function renderSeasons(){
   container.innerHTML=html;
 }
 
+function onCardHover(idx){
+  hoveredIdx=idx;
+  updateCenter(idx);
+  highlightWheel(idx);
+}
+function onCardLeave(){
+  hoveredIdx=-1;
+  updateCenter(getCurrentTermIdx());
+  highlightWheel(getCurrentTermIdx());
+}
+
 function renderWheel(){
   const svg=document.getElementById('wheel-svg');
-  const cx=200,cy=200,r=130;
+  const cx=200,cy=200,r=135;
   const all=getAllTerms();
   const currentIdx=getCurrentTermIdx();
   let html='';
 
-  // 外圈
-  html+=`<circle cx="${cx}" cy="${cy}" r="${r+20}" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1"/>`;
-  html+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`;
+  // defs
+  html+=`<defs>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>`;
 
-  // 中心
-  html+=`<circle cx="${cx}" cy="${cy}" r="40" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`;
-  const current=all[currentIdx];
-  html+=`<text x="${cx}" y="${cy-6}" text-anchor="middle" fill="${current.season.color}" font-size="18" font-weight="800">${current.name}</text>`;
-  html+=`<text x="${cx}" y="${cy+12}" text-anchor="middle" fill="#7A7A8A" font-size="9">${current.date}</text>`;
+  // 外装饰圈 + 刻度
+  html+=`<circle cx="${cx}" cy="${cy}" r="${r+22}" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="1"/>`;
+  for(let i=0;i<24;i++){
+    const a=(i/24)*Math.PI*2-Math.PI/2;
+    const r1=r+18, r2=r+22;
+    html+=`<line x1="${cx+Math.cos(a)*r1}" y1="${cy+Math.sin(a)*r1}" x2="${cx+Math.cos(a)*r2}" y2="${cy+Math.sin(a)*r2}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`;
+  }
+  html+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>`;
 
-  // 24等分扇形 + 节气名
+  // 中心圆
+  html+=`<circle cx="${cx}" cy="${cy}" r="44" fill="rgba(255,255,255,.025)" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`;
+  html+=`<circle cx="${cx}" cy="${cy}" r="44" fill="none" stroke="${all[currentIdx].season.color}" stroke-width="1" opacity=".3"/>`;
+
+  // 24扇形
   for(let i=0;i<24;i++){
     const angle1=(i/24)*Math.PI*2-Math.PI/2;
     const angle2=((i+1)/24)*Math.PI*2-Math.PI/2;
@@ -288,34 +342,34 @@ function renderWheel(){
     const t=all[i];
     const isCurrent=i===currentIdx;
 
-    // 扇形
     const x1=cx+Math.cos(angle1)*r, y1=cy+Math.sin(angle1)*r;
     const x2=cx+Math.cos(angle2)*r, y2=cy+Math.sin(angle2)*r;
-    const xi1=cx+Math.cos(angle1)*(r-30), yi1=cy+Math.sin(angle1)*(r-30);
-    const xi2=cx+Math.cos(angle2)*(r-30), yi2=cy+Math.sin(angle2)*(r-30);
+    const ri=r-32;
+    const xi1=cx+Math.cos(angle1)*ri, yi1=cy+Math.sin(angle1)*ri;
+    const xi2=cx+Math.cos(angle2)*ri, yi2=cy+Math.sin(angle2)*ri;
 
-    const opacity=isCurrent?.25:.08;
-    html+=`<path d="M ${xi1} ${yi1} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} L ${xi2} ${yi2} Z" fill="${t.season.color}" opacity="${opacity}"/>`;
+    const opacity=isCurrent?.28:.1;
+    html+=`<path class="sector" data-idx="${i}" d="M ${xi1} ${yi1} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} L ${xi2} ${yi2} Z" fill="${t.season.color}" opacity="${opacity}" onmouseenter="onWheelHover(${i})" onmouseleave="onWheelLeave()"/>`;
 
     // 分隔线
-    html+=`<line x1="${xi1}" y1="${yi1}" x2="${x1}" y2="${y1}" stroke="rgba(255,255,255,.06)" stroke-width="1"/>`;
+    html+=`<line x1="${xi1}" y1="${yi1}" x2="${x1}" y2="${y1}" stroke="rgba(255,255,255,.05)" stroke-width="1"/>`;
 
     // 节气名
-    const labelR=r-15;
+    const labelR=r-16;
     const lx=cx+Math.cos(midAngle)*labelR;
     const ly=cy+Math.sin(midAngle)*labelR;
-    const fontSize=isCurrent?11:8;
+    const fontSize=isCurrent?11:8.5;
     const fontWeight=isCurrent?700:500;
-    const fill=isCurrent?t.season.color:'rgba(255,255,255,.5)';
-    html+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="${fill}" font-size="${fontSize}" font-weight="${fontWeight}">${t.name}</text>`;
+    const fill=isCurrent?t.season.color:'rgba(255,255,255,.45)';
+    html+=`<text class="sector-label" data-idx="${i}" x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="${fill}" font-size="${fontSize}" font-weight="${fontWeight}" onmouseenter="onWheelHover(${i})" onmouseleave="onWheelLeave()">${t.name}</text>`;
 
-    // 当前节气指示点
+    // 当前节气外指示
     if(isCurrent){
-      const dotR=r+8;
+      const dotR=r+10;
       const dx=cx+Math.cos(midAngle)*dotR;
       const dy=cy+Math.sin(midAngle)*dotR;
-      html+=`<circle cx="${dx}" cy="${dy}" r="4" fill="${t.season.color}"/>`;
-      html+=`<circle cx="${dx}" cy="${dy}" r="8" fill="${t.season.color}" opacity=".3"/>`;
+      html+=`<circle cx="${dx}" cy="${dy}" r="4" fill="${t.season.color}" filter="url(#glow)"/>`;
+      html+=`<circle cx="${dx}" cy="${dy}" r="9" fill="${t.season.color}" opacity=".2"><animate attributeName="r" values="9;13;9" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;0;.2" dur="2s" repeatCount="indefinite"/></circle>`;
     }
   }
 
@@ -327,17 +381,95 @@ function renderWheel(){
     {label:'冬',angle:Math.PI+Math.PI/4,color:'#818CF8'},
   ];
   seasonLabels.forEach(s=>{
-    const lx=cx+Math.cos(s.angle)*(r+35);
-    const ly=cy+Math.sin(s.angle)*(r+35);
-    html+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="${s.color}" font-size="14" font-weight="700" opacity=".6">${s.label}</text>`;
+    const lx=cx+Math.cos(s.angle)*(r+38);
+    const ly=cy+Math.sin(s.angle)*(r+38);
+    html+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="${s.color}" font-size="15" font-weight="700" opacity=".5">${s.label}</text>`;
   });
 
   svg.innerHTML=html;
 }
 
+function onWheelHover(idx){
+  hoveredIdx=idx;
+  updateCenter(idx);
+  highlightCard(idx);
+}
+function onWheelLeave(){
+  hoveredIdx=-1;
+  updateCenter(getCurrentTermIdx());
+  highlightCard(getCurrentTermIdx());
+}
+
+function highlightWheel(idx){
+  const sectors=document.querySelectorAll('.wheel-svg .sector');
+  const labels=document.querySelectorAll('.wheel-svg .sector-label');
+  const all=getAllTerms();
+  sectors.forEach(s=>{
+    const i=parseInt(s.dataset.idx);
+    if(i===idx){
+      s.setAttribute('opacity','.3');
+    } else {
+      s.setAttribute('opacity', i===getCurrentTermIdx() ? '.28' : '.1');
+    }
+  });
+  labels.forEach(l=>{
+    const i=parseInt(l.dataset.idx);
+    if(i===idx){
+      l.setAttribute('fill',all[i].season.color);
+      l.setAttribute('font-size','11');
+      l.setAttribute('font-weight','700');
+    } else if(i===getCurrentTermIdx()){
+      l.setAttribute('fill',all[i].season.color);
+      l.setAttribute('font-size','11');
+      l.setAttribute('font-weight','700');
+    } else {
+      l.setAttribute('fill','rgba(255,255,255,.45)');
+      l.setAttribute('font-size','8.5');
+      l.setAttribute('font-weight','500');
+    }
+  });
+}
+
+function highlightCard(idx){
+  document.querySelectorAll('.term-card').forEach(c=>{
+    const i=parseInt(c.dataset.idx);
+    if(i===idx&&i!==getCurrentTermIdx()){
+      c.style.borderColor=all_terms[i].season.color+'60';
+      c.style.transform='translateY(-3px)';
+    } else if(i!==getCurrentTermIdx()){
+      c.style.borderColor='';
+      c.style.transform='';
+    }
+  });
+}
+
+let all_terms=[];
+function initAmbient(){
+  const currentIdx=getCurrentTermIdx();
+  all_terms=getAllTerms();
+  const season=all_terms[currentIdx].season;
+  const container=document.getElementById('ambient');
+  const count=12;
+  for(let i=0;i<count;i++){
+    const p=document.createElement('div');
+    p.className='petal';
+    p.style.left=Math.random()*100+'%';
+    p.style.animationDuration=(6+Math.random()*8)+'s';
+    p.style.animationDelay=Math.random()*8+'s';
+    const size=8+Math.random()*8;
+    p.style.fontSize=size+'px';
+    p.style.textContent='';
+    p.textContent=season.petal;
+    p.style.color=season.color;
+    p.style.filter=`drop-shadow(0 0 4px ${season.color}40)`;
+    container.appendChild(p);
+  }
+}
+
 renderCurrent();
 renderSeasons();
 renderWheel();
+initAmbient();
 </script>
 </body>
 </html>
