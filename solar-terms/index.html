@@ -132,6 +132,56 @@
   .term-card.current .term-num{left:10px;right:auto;opacity:0}
 
   .footer{text-align:center;font-size:.66rem;color:var(--dim2);letter-spacing:.04em;padding:8px 0}
+
+  .term-meaning{font-size:.68rem;color:var(--dim);margin-bottom:6px;line-height:1.4;opacity:.8}
+  .term-card{cursor:pointer}
+  .term-card .expand-hint{
+    font-size:.6rem;color:var(--dim2);margin-top:6px;text-align:center;
+    opacity:0;transition:opacity .3s;letter-spacing:.05em;
+  }
+  .term-card:hover .expand-hint{opacity:.7}
+
+  .detail-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);z-index:200;opacity:0;pointer-events:none;
+    transition:opacity .3s;
+  }
+  .detail-overlay.show{opacity:1;pointer-events:auto}
+
+  .detail-panel{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);
+    width:100%;max-width:480px;max-height:80vh;overflow-y:auto;
+    background:linear-gradient(180deg,rgba(20,20,30,.95),rgba(10,10,15,.98));
+    border:1px solid var(--border);border-radius:24px 24px 0 0;
+    padding:24px 20px;z-index:201;
+    transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+    box-shadow:0 -10px 60px rgba(0,0,0,.5);
+  }
+  .detail-panel.show{transform:translateX(-50%) translateY(0)}
+  .detail-close{
+    position:absolute;top:12px;right:12px;width:32px;height:32px;
+    border-radius:50%;border:1px solid var(--border);background:var(--card);
+    color:var(--dim);font-size:1.1rem;cursor:pointer;display:flex;
+    align-items:center;justify-content:center;transition:all .2s;
+  }
+  .detail-close:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+  .detail-header{text-align:center;margin-bottom:16px;padding-top:8px}
+  .detail-num{font-size:.65rem;color:var(--dim);letter-spacing:.1em;margin-bottom:4px}
+  .detail-name{font-size:2rem;font-weight:900;letter-spacing:-0.03em;margin-bottom:4px}
+  .detail-date{font-size:.75rem;color:var(--dim);font-variant-numeric:tabular-nums}
+  .detail-poem{
+    font-size:.85rem;color:var(--text);opacity:.7;font-style:italic;
+    text-align:center;margin-bottom:16px;padding:10px 16px;
+    background:var(--card);border-radius:12px;border:1px solid var(--border);
+  }
+  .detail-section{margin-bottom:14px}
+  .detail-label{
+    display:flex;align-items:center;gap:6px;
+    font-size:.68rem;color:var(--dim);letter-spacing:.08em;
+    text-transform:uppercase;margin-bottom:4px;
+  }
+  .detail-label .icon{font-size:.85rem}
+  .detail-content{font-size:.82rem;color:var(--text);opacity:.85;line-height:1.6;padding-left:2px}
 </style>
 </head>
 <body>
@@ -153,6 +203,7 @@
       <span><span id="current-date">—</span></span>
       <span><span id="current-days">—</span></span>
     </div>
+    <div class="current-detail" id="current-detail" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:.78rem;color:var(--dim);line-height:1.6"></div>
   </div>
 
   <div class="wheel-section">
@@ -166,39 +217,66 @@
   <div class="footer">二十四节气 · 中国第五大发明 · 联合国教科文组织人类非物质文化遗产</div>
 </div>
 
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detail-panel">
+  <button class="detail-close" onclick="closeDetail()">✕</button>
+  <div class="detail-header">
+    <div class="detail-num" id="detail-num"></div>
+    <div class="detail-name" id="detail-name"></div>
+    <div class="detail-date" id="detail-date"></div>
+  </div>
+  <div class="detail-poem" id="detail-poem"></div>
+  <div class="detail-section">
+    <div class="detail-label"><span class="icon">📖</span>节气含义</div>
+    <div class="detail-content" id="detail-meaning"></div>
+  </div>
+  <div class="detail-section">
+    <div class="detail-label"><span class="icon">🎊</span>民俗习俗</div>
+    <div class="detail-content" id="detail-custom"></div>
+  </div>
+  <div class="detail-section">
+    <div class="detail-label"><span class="icon">🌿</span>养生建议</div>
+    <div class="detail-content" id="detail-health"></div>
+  </div>
+  <div class="detail-section">
+    <div class="detail-label"><span class="icon">💬</span>节气谚语</div>
+    <div class="detail-content" id="detail-saying"></div>
+  </div>
+</div>
+
 <script>
 const SEASONS = [
   {key:'spring',name:'春',icon:'🌱',sub:'万物复苏 · 六节气',color:'#4ADE80',petal:'🌸',terms:[
-    {name:'立春',date:'2月3-5日',poem:'东风解冻，蛰虫始振，鱼陟负冰'},
-    {name:'雨水',date:'2月18-20日',poem:'獭祭鱼，候雁北，草木萌动'},
-    {name:'惊蛰',date:'3月5-7日',poem:'桃始华，仓庚鸣，鹰化为鸠'},
-    {name:'春分',date:'3月20-22日',poem:'玄鸟至，雷乃发声，始电'},
-    {name:'清明',date:'4月4-6日',poem:'桐始华，田鼠化为鴽，虹始见'},
-    {name:'谷雨',date:'4月19-21日',poem:'萍始生，鸣鸠拂其羽，戴胜降于桑'},
+    {name:'立春',date:'2月3-5日',poem:'东风解冻，蛰虫始振，鱼陟负冰',meaning:'春季的开始，万物开始复苏，大地回暖',custom:'咬春饼、打春牛、迎春接福',health:'护肝养阳，宜辛甘发散，少酸增甘',saying:'立春一日，百草回芽'},
+    {name:'雨水',date:'2月18-20日',poem:'獭祭鱼，候雁北，草木萌动',meaning:'降雨开始，雨量渐增，气温回升',custom:'回娘屋、拉保保、占稻色',health:'健脾祛湿，防寒保暖，注意春捂',saying:'雨水有雨庄稼好，大春小春一片宝'},
+    {name:'惊蛰',date:'3月5-7日',poem:'桃始华，仓庚鸣，鹰化为鸠',meaning:'春雷乍动，惊醒蛰伏冬眠的动物',custom:'祭白虎、打小人、吃梨',health:'多吃梨润肺，起居有常，保持肝气舒畅',saying:'惊蛰春雷响，农夫闲转忙'},
+    {name:'春分',date:'3月20-22日',poem:'玄鸟至，雷乃发声，始电',meaning:'昼夜平分，春意正浓，寒暑平衡',custom:'竖蛋、放风筝、踏青、春祭',health:'调情志适寒暑，注意阴阳平衡',saying:'春分麦起身，一刻值千金'},
+    {name:'清明',date:'4月4-6日',poem:'桐始华，田鼠化为鴽，虹始见',meaning:'天气清朗，万物洁净，空气清新',custom:'扫墓祭祖、踏青、插柳、放风筝',health:'护肝养肺，宜清淡，多食时令蔬菜',saying:'清明前后，种瓜点豆'},
+    {name:'谷雨',date:'4月19-21日',poem:'萍始生，鸣鸠拂其羽，戴胜降于桑',meaning:'雨生百谷，春播时节，雨水充沛',custom:'走谷雨、品春茶、赏牡丹',health:'祛湿养胃，防湿邪，宜食健脾之物',saying:'谷雨前后，栽瓜种豆'},
   ]},
   {key:'summer',name:'夏',icon:'☀️',sub:'万物繁茂 · 六节气',color:'#F87171',petal:'✨',terms:[
-    {name:'立夏',date:'5月5-7日',poem:'蝼蝈鸣，蚯蚓出，王瓜生'},
-    {name:'小满',date:'5月20-22日',poem:'苦菜秀，靡草死，麦秋至'},
-    {name:'芒种',date:'6月5-7日',poem:'螳螂生，鵙始鸣，反舌无声'},
-    {name:'夏至',date:'6月21-22日',poem:'鹿角解，蜩始鸣，半夏生'},
-    {name:'小暑',date:'7月6-8日',poem:'温风至，蟋蟀居壁，鹰乃学习'},
-    {name:'大暑',date:'7月22-24日',poem:'腐草化萤，土润溽暑，大雨时行'},
+    {name:'立夏',date:'5月5-7日',poem:'蝼蝈鸣，蚯蚓出，王瓜生',meaning:'夏季开始，万物繁茂生长',custom:'称人、斗蛋、尝新、立夏饭',health:'养心安神，宜清淡，忌大汗',saying:'立夏小满，雨水相赶'},
+    {name:'小满',date:'5月20-22日',poem:'苦菜秀，靡草死，麦秋至',meaning:'麦粒渐满，尚未完全成熟',custom:'祭车神、祈蚕节、食苦菜',health:'清热利湿，防皮肤病，忌肥甘',saying:'小满未满，麦有一险'},
+    {name:'芒种',date:'6月5-7日',poem:'螳螂生，鵙始鸣，反舌无声',meaning:'有芒之谷可种，晚稻抢种时节',custom:'送花神、煮梅、安苗',health:'清热化湿，宜午睡，多饮水',saying:'芒种忙忙种，连收带打'},
+    {name:'夏至',date:'6月21-22日',poem:'鹿角解，蜩始鸣，半夏生',meaning:'白昼最长，盛夏始至，阳气至极',custom:'吃面、祭神祀祖、夏至节',health:'养阳护心，忌寒凉，宜午休',saying:'夏至杨梅满山红，大暑小暑有东风'},
+    {name:'小暑',date:'7月6-8日',poem:'温风至，蟋蟀居壁，鹰乃学习',meaning:'暑气渐盛，尚未到达极热',custom:'晒伏、食新、吃饺子',health:'避暑养心，宜静养，少动多静',saying:'小暑大暑，上蒸下煮'},
+    {name:'大暑',date:'7月22-24日',poem:'腐草化萤，土润溽暑，大雨时行',meaning:'炎热至极，酷暑难耐，一年最热',custom:'饮伏茶、晒伏姜、送大暑船',health:'防中暑，宜清热，多食绿豆苦瓜',saying:'大暑连天阴，遍地出黄金'},
   ]},
   {key:'autumn',name:'秋',icon:'🍂',sub:'万物收成 · 六节气',color:'#FBBF24',petal:'🍁',terms:[
-    {name:'立秋',date:'8月7-9日',poem:'凉风至，白露降，寒蝉鸣'},
-    {name:'处暑',date:'8月22-24日',poem:'鹰乃祭鸟，天地始肃，禾乃登'},
-    {name:'白露',date:'9月7-9日',poem:'鸿雁来，玄鸟归，群鸟养羞'},
-    {name:'秋分',date:'9月22-24日',poem:'雷始收声，蛰虫坯户，水始涸'},
-    {name:'寒露',date:'10月8-9日',poem:'鸿雁来宾，雀入大水为蛤，菊有黄华'},
-    {name:'霜降',date:'10月23-24日',poem:'豺乃祭兽，草木黄落，蛰虫咸俯'},
+    {name:'立秋',date:'8月7-9日',poem:'凉风至，白露降，寒蝉鸣',meaning:'秋季开始，暑去凉来，万物收敛',custom:'贴秋膘、啃秋、晒秋',health:'养肺润燥，宜酸味，少辛增酸',saying:'立秋拿住把，一天长一扎'},
+    {name:'处暑',date:'8月22-24日',poem:'鹰乃祭鸟，天地始肃，禾乃登',meaning:'暑气渐消，天气转凉，秋高气爽',custom:'放河灯、开渔节、吃鸭子',health:'调整睡眠，防秋燥，宜滋阴润肺',saying:'处暑满地黄，家家修廪仓'},
+    {name:'白露',date:'9月7-9日',poem:'鸿雁来，玄鸟归，群鸟养羞',meaning:'露凝而白，秋意渐浓，天气转凉',custom:'收清露、酿米酒、祭禹王',health:'润肺防燥，不露身，注意保暖',saying:'白露秋分夜，一夜凉一夜'},
+    {name:'秋分',date:'9月22-24日',poem:'雷始收声，蛰虫坯户，水始涸',meaning:'昼夜平分，秋色正中，阴阳相半',custom:'祭月、竖蛋、吃秋菜、送秋牛',health:'阴阳平衡，宜平补，调畅情志',saying:'秋分天晴必久旱'},
+    {name:'寒露',date:'10月8-9日',poem:'鸿雁来宾，雀入大水为蛤，菊有黄华',meaning:'露已寒冷，将凝为霜，深秋将至',custom:'赏菊、登高、饮菊花酒',health:'足部保暖，防感冒，宜早睡早起',saying:'寒露脚不露，百病从寒起'},
+    {name:'霜降',date:'10月23-24日',poem:'豺乃祭兽，草木黄落，蛰虫咸俯',meaning:'初霜降临，万物始收，秋将尽冬欲来',custom:'吃柿子、赏菊、进补',health:'健脾养胃，宜温补，注意关节保暖',saying:'霜降杀百草，来年春来到'},
   ]},
   {key:'winter',name:'冬',icon:'❄️',sub:'万物收藏 · 六节气',color:'#818CF8',petal:'❄️',terms:[
-    {name:'立冬',date:'11月7-8日',poem:'水始冰，地始冻，雉入大水为蜃'},
-    {name:'小雪',date:'11月22-23日',poem:'虹藏不见，天气上腾地气下降，闭塞而成冬'},
-    {name:'大雪',date:'12月6-8日',poem:'鹖鴠不鸣，虎始交，荔挺出'},
-    {name:'冬至',date:'12月21-23日',poem:'蚯蚓结，麋角解，水泉动'},
-    {name:'小寒',date:'1月5-7日',poem:'雁北乡，鹊始巢，雉始鸲'},
-    {name:'大寒',date:'1月20-21日',poem:'鸡始乳，征鸟厉疾，水泽腹坚'},
+    {name:'立冬',date:'11月7-8日',poem:'水始冰，地始冻，雉入大水为蜃',meaning:'冬季开始，万物收藏，阳气潜藏',custom:'吃饺子、补冬、贺冬',health:'补肾防寒，宜温补，早睡晚起',saying:'立冬补冬，补嘴空'},
+    {name:'小雪',date:'11月22-23日',poem:'虹藏不见，天气上腾地气下降，闭塞而成冬',meaning:'始降雪花，尚未盛大，气温继续下降',custom:'腌菜、吃糍粑、晒鱼干',health:'温补肾阳，防抑郁，多晒太阳',saying:'小雪地封严，大小雪不寒'},
+    {name:'大雪',date:'12月6-8日',poem:'鹖鴠不鸣，虎始交，荔挺出',meaning:'雪量增多，地面积雪，严冬到来',custom:'腌肉、赏雪、进补',health:'保暖护阳，宜进补，防寒防滑',saying:'瑞雪兆丰年，来年枕着馒头睡'},
+    {name:'冬至',date:'12月21-23日',poem:'蚯蚓结，麋角解，水泉动',meaning:'白昼最短，数九寒天开始，阴极阳生',custom:'吃饺子/汤圆、祭祖、九九消寒',health:'养藏防寒，宜温补，护元固本',saying:'冬至大如年，数九寒天始'},
+    {name:'小寒',date:'1月5-7日',poem:'雁北乡，鹊始巢，雉始鸲',meaning:'寒气渐盛，尚未极冷，严冬深处',custom:'吃腊八粥、探梅、画图数九',health:'御寒保暖，宜温阳，注意心脑血管',saying:'小寒大寒，冻成一团'},
+    {name:'大寒',date:'1月20-21日',poem:'鸡始乳，征鸟厉疾，水泽腹坚',meaning:'寒冷至极，冰天雪地，一年终了',custom:'尾牙祭、除旧布新、蒸供',health:'固本培元，迎春接气，宜温补养藏',saying:'大寒到顶点，日后天渐暖'},
   ]},
 ];
 
@@ -263,6 +341,9 @@ function updateCenter(idx){
   } else {
     daysEl.textContent=`第 ${idx+1} 个节气`;
   }
+
+  const detailEl=document.getElementById('current-detail');
+  detailEl.innerHTML=`<span style="color:${t.season.color};font-weight:600">📖 ${t.meaning}</span><br><span style="opacity:.7">🎊 ${t.custom}</span><br><span style="opacity:.7">🌿 ${t.health}</span><br><span style="opacity:.6;font-style:italic">💬 ${t.saying}</span>`;
 }
 
 function renderCurrent(){
@@ -285,11 +366,13 @@ function renderSeasons(){
     season.terms.forEach(term=>{
       const isCurrent=termCounter===currentIdx;
       const idx=termCounter;
-      html+=`<div class="term-card ${season.key}${isCurrent?' current':''}" data-idx="${idx}" onmouseenter="onCardHover(${idx})" onmouseleave="onCardLeave()">
+      html+=`<div class="term-card ${season.key}${isCurrent?' current':''}" data-idx="${idx}" onclick="openDetail(${idx})" onmouseenter="onCardHover(${idx})" onmouseleave="onCardLeave()">
         <div class="term-num">${String(idx+1).padStart(2,'0')}</div>
         <div class="term-name">${term.name}</div>
         <div class="term-date">${term.date}</div>
+        <div class="term-meaning">${term.meaning}</div>
         <div class="term-poem">${term.poem}</div>
+        <div class="expand-hint">点击查看详情 →</div>
       </div>`;
       termCounter++;
     });
@@ -444,6 +527,31 @@ function highlightCard(idx){
 }
 
 let all_terms=[];
+
+function openDetail(idx){
+  const all=getAllTerms();
+  const t=all[idx];
+  const c=t.season.color;
+  document.getElementById('detail-num').textContent=`No.${String(idx+1).padStart(2,'0')} / 24 · ${t.season.name}季`;
+  const nameEl=document.getElementById('detail-name');
+  nameEl.textContent=t.name;
+  nameEl.style.color=c;
+  document.getElementById('detail-date').textContent=t.date;
+  document.getElementById('detail-poem').textContent=t.poem;
+  document.getElementById('detail-poem').style.borderColor=c+'30';
+  document.getElementById('detail-meaning').textContent=t.meaning;
+  document.getElementById('detail-custom').textContent=t.custom;
+  document.getElementById('detail-health').textContent=t.health;
+  document.getElementById('detail-saying').textContent=t.saying;
+  document.getElementById('detail-overlay').classList.add('show');
+  document.getElementById('detail-panel').classList.add('show');
+}
+
+function closeDetail(){
+  document.getElementById('detail-overlay').classList.remove('show');
+  document.getElementById('detail-panel').classList.remove('show');
+}
+
 function initAmbient(){
   const currentIdx=getCurrentTermIdx();
   all_terms=getAllTerms();
