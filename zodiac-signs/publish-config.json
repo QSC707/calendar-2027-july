@@ -1,0 +1,10 @@
+{
+  "workName": "十二星座·Zodiac Signs",
+  "introduction": "十二星座完整展示，含星座轮盘、四象分组、当前星座识别与详细性格分析、星空背景动画",
+  "gitUrl": "https://github.com/QSC707/calendar-2027-july.git",
+  "gitBranch": "master",
+  "campId": "e4c24564-04f0-42f0-8980-695fee23dcc3",
+  "htmlFile": "index.html",
+  "domainId": "057cc3d0d68010e60fb3c0075a0af360",
+  "region": "cn-north-4"
+}

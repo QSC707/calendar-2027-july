@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>十二星座 · Zodiac Signs</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#080812; --card:rgba(255,255,255,0.035); --card2:rgba(255,255,255,0.06);
+    --border:rgba(255,255,255,0.08); --text:#F0F0F8; --dim:#7A7A9A; --dim2:#4A4A6A;
+    --fire:#F87171; --earth:#4ADE80; --air:#38BDF8; --water:#A78BFA;
+    --gold:#FBBF24;
+  }
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Segoe UI','SF Pro Display',system-ui,sans-serif;
+    min-height:100vh; overflow-x:hidden; letter-spacing:-0.01em;
+  }
+  body::before{
+    content:''; position:fixed; width:100%; height:100%; top:0; left:0;
+    background:radial-gradient(ellipse at 30% 0%,rgba(168,139,250,.06),transparent 50%),
+               radial-gradient(ellipse at 70% 50%,rgba(56,189,248,.04),transparent 50%),
+               radial-gradient(ellipse at 50% 100%,rgba(251,191,36,.03),transparent 50%);
+    pointer-events:none; z-index:0;
+  }
+
+  .stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .star{position:absolute;border-radius:50%;background:#fff;animation:twinkle ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.1;transform:scale(.5)}50%{opacity:.8;transform:scale(1)}}
+  .shooting-star{
+    position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;
+    box-shadow:0 0 6px #fff;animation:shoot 3s linear infinite;
+  }
+  @keyframes shoot{
+    0%{transform:translate(0,0) rotate(35deg);opacity:0}
+    10%{opacity:1}
+    100%{transform:translate(300px,200px) rotate(35deg);opacity:0}
+  }
+
+  .app{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:28px 20px}
+
+  .header{text-align:center;margin-bottom:24px}
+  .header h1{
+    font-size:2rem;font-weight:800;letter-spacing:-0.04em;
+    background:linear-gradient(135deg,var(--fire),var(--gold),var(--air),var(--water));
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    background-size:200% 200%; animation:gradShift 8s ease infinite;
+  }
+  @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .header p{font-size:.85rem;color:var(--dim);margin-top:6px;letter-spacing:.04em}
+
+  .current-card{
+    background:linear-gradient(135deg,var(--card2),var(--card));
+    border:1px solid var(--border); border-radius:24px; padding:24px;
+    backdrop-filter:blur(28px) saturate(1.2); -webkit-backdrop-filter:blur(28px) saturate(1.2);
+    box-shadow:0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);
+    margin-bottom:20px; position:relative; overflow:hidden; text-align:center;
+  }
+  .current-card::before{
+    content:''; position:absolute; top:0; left:-100%; width:50%; height:100%;
+    background:linear-gradient(105deg,transparent,rgba(255,255,255,.04),transparent);
+    animation:shimmer 8s infinite;
+  }
+  @keyframes shimmer{0%{left:-100%}100%{left:250%}}
+  .current-label{font-size:.68rem;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px}
+  .current-symbol{font-size:3rem;margin-bottom:4px;line-height:1}
+  .current-name{font-size:2rem;font-weight:900;letter-spacing:-0.03em;margin-bottom:2px}
+  .current-name-en{font-size:.8rem;color:var(--dim);margin-bottom:10px;letter-spacing:.1em;text-transform:uppercase}
+  .current-meta{display:flex;justify-content:center;gap:20px;font-size:.76rem;flex-wrap:wrap;margin-bottom:14px}
+  .current-meta span{display:flex;align-items:center;gap:5px}
+  .current-meta .dot{width:5px;height:5px;border-radius:50%}
+  .current-traits{font-size:.82rem;color:var(--text);opacity:.75;line-height:1.6;padding:12px 16px;background:var(--card);border-radius:12px;border:1px solid var(--border)}
+  .current-num{position:absolute;top:16px;left:16px;font-size:.7rem;color:var(--dim);font-variant-numeric:tabular-nums;letter-spacing:.05em}
+
+  .wheel-section{
+    background:var(--card); border:1px solid var(--border); border-radius:24px; padding:20px;
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); margin-bottom:24px; text-align:center;
+  }
+  .wheel-title{font-size:.75rem;color:var(--dim);margin-bottom:8px;letter-spacing:.08em}
+  .wheel-hint{font-size:.65rem;color:var(--dim2);margin-bottom:12px}
+  .wheel-svg{width:100%;max-width:380px;height:auto;display:block;margin:0 auto}
+  .wheel-svg .sector{cursor:pointer;transition:opacity .3s}
+  .wheel-svg .sector:hover{opacity:.35!important}
+
+  .element-section{margin-bottom:20px}
+  .element-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .element-icon{
+    width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:1.15rem; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  }
+  .element-title{font-size:1.1rem;font-weight:700;letter-spacing:-0.02em}
+  .element-sub{font-size:.68rem;color:var(--dim);letter-spacing:.05em}
+  .element-line{flex:1;height:1px}
+
+  .signs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:600px){.signs-grid{grid-template-columns:repeat(2,1fr)}}
+
+  .sign-card{
+    background:var(--card); border:1px solid var(--border); border-radius:16px; padding:14px;
+    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    transition:all .3s cubic-bezier(.4,0,.2,1); position:relative; overflow:hidden; cursor:pointer;
+  }
+  .sign-card:hover{transform:translateY(-3px); border-color:rgba(255,255,255,.15)}
+  .sign-card.fire{--c:var(--fire)}
+  .sign-card.earth{--c:var(--earth)}
+  .sign-card.air{--c:var(--air)}
+  .sign-card.water{--c:var(--water)}
+  .sign-card:hover{box-shadow:0 8px 32px color-mix(in srgb,var(--c) 15%,transparent)}
+
+  .sign-sym{font-size:1.8rem;margin-bottom:4px;line-height:1;color:var(--c);text-shadow:0 0 10px color-mix(in srgb,var(--c) 40%,transparent)}
+  .sign-name{font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:2px}
+  .sign-date{font-size:.66rem;color:var(--dim);margin-bottom:6px;font-variant-numeric:tabular-nums}
+  .sign-trait{font-size:.7rem;color:var(--text);opacity:.6;line-height:1.4}
+  .sign-num{position:absolute;top:10px;right:10px;font-size:.6rem;color:var(--dim2);opacity:.5}
+
+  .sign-card.current{
+    border-color:var(--c);
+    box-shadow:0 0 24px color-mix(in srgb,var(--c) 15%,transparent),inset 0 0 20px color-mix(in srgb,var(--c) 8%,transparent);
+    animation:currentPulse 3s ease-in-out infinite;
+  }
+  @keyframes currentPulse{0%,100%{box-shadow:0 0 24px color-mix(in srgb,var(--c) 12%,transparent),inset 0 0 20px color-mix(in srgb,var(--c) 6%,transparent)}50%{box-shadow:0 0 36px color-mix(in srgb,var(--c) 20%,transparent),inset 0 0 28px color-mix(in srgb,var(--c) 10%,transparent)}}
+  .sign-card.current::before{
+    content:'今'; position:absolute; top:8px; left:8px;
+    width:20px; height:20px; border-radius:50%;
+    background:var(--c); color:var(--bg); font-size:.68rem; font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 12px var(--c);
+  }
+
+  .footer{text-align:center;font-size:.66rem;color:var(--dim2);letter-spacing:.04em;padding:8px 0}
+
+  .detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}
+  .detail-overlay.show{opacity:1;pointer-events:auto}
+  .detail-panel{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);
+    width:100%;max-width:480px;max-height:82vh;overflow-y:auto;
+    background:linear-gradient(180deg,rgba(20,20,35,.95),rgba(8,8,18,.98));
+    border:1px solid var(--border);border-radius:24px 24px 0 0;padding:24px 20px;z-index:201;
+    transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 -10px 60px rgba(0,0,0,.5);
+  }
+  .detail-panel.show{transform:translateX(-50%) translateY(0)}
+  .detail-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+  .detail-close:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+  .detail-header{text-align:center;margin-bottom:16px;padding-top:8px}
+  .detail-sym{font-size:3rem;margin-bottom:4px}
+  .detail-name{font-size:1.8rem;font-weight:900;letter-spacing:-0.03em;margin-bottom:2px}
+  .detail-name-en{font-size:.75rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+  .detail-date{font-size:.75rem;color:var(--dim);font-variant-numeric:tabular-nums}
+  .detail-tags{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:10px 0 16px}
+  .detail-tag{padding:4px 12px;border-radius:20px;font-size:.68rem;font-weight:600;border:1px solid var(--border);background:var(--card)}
+  .detail-section{margin-bottom:14px}
+  .detail-label{display:flex;align-items:center;gap:6px;font-size:.68rem;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+  .detail-label .icon{font-size:.85rem}
+  .detail-content{font-size:.82rem;color:var(--text);opacity:.85;line-height:1.6}
+  .detail-lucky{display:flex;gap:16px;font-size:.78rem}
+  .detail-lucky span{display:flex;align-items:center;gap:4px}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="app">
+  <div class="header">
+    <h1>✦ 十二星座 ✦</h1>
+    <p>探索星空的秘密 · 了解你的星座特质</p>
+  </div>
+
+  <div class="current-card" id="current-card">
+    <div class="current-num" id="current-num"></div>
+    <div class="current-label">当前星座</div>
+    <div class="current-symbol" id="current-symbol">—</div>
+    <div class="current-name" id="current-name">—</div>
+    <div class="current-name-en" id="current-name-en">—</div>
+    <div class="current-meta">
+      <span><span class="dot" id="current-dot"></span><span id="current-element">—</span></span>
+      <span>🪐 <span id="current-planet">—</span></span>
+      <span>📅 <span id="current-date">—</span></span>
+    </div>
+    <div class="current-traits" id="current-traits">—</div>
+  </div>
+
+  <div class="wheel-section">
+    <div class="wheel-title">星座轮盘</div>
+    <div class="wheel-hint">悬停扇形查看星座详情</div>
+    <svg class="wheel-svg" id="wheel-svg" viewBox="0 0 400 400"></svg>
+  </div>
+
+  <div id="elements-container"></div>
+
+  <div class="footer">十二星座 · 黄道十二宫 · 占星学基础知识</div>
+</div>
+
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detail-panel">
+  <button class="detail-close" onclick="closeDetail()">✕</button>
+  <div class="detail-header">
+    <div class="detail-sym" id="detail-sym"></div>
+    <div class="detail-name" id="detail-name"></div>
+    <div class="detail-name-en" id="detail-name-en"></div>
+    <div class="detail-date" id="detail-date"></div>
+    <div class="detail-tags" id="detail-tags"></div>
+  </div>
+  <div class="detail-section">
+    <div class="detail-label"><span class="icon">📖</span>星座简介</div>
+    <div class="detail-content" id="detail-desc"></div>
+  </div>
+  <div class="detail-section">
+    <div class="detail-label"><span class="icon">⭐</span>性格特质</div>
+    <div class="detail-content" id="detail-traits"></div>
+  </div>
+  <div class="detail-section">
+    <div class="detail-label"><span class="icon">✅</span>优点</div>
+    <div class="detail-content" id="detail-pros"></div>
+  </div>
+  <div class="detail-section">
+    <div class="detail-label"><span class="icon">⚠️</span>缺点</div>
+    <div class="detail-content" id="detail-cons"></div>
+  </div>
+  <div class="detail-section">
+    <div class="detail-label"><span class="icon">💕</span>最佳配对</div>
+    <div class="detail-content" id="detail-match"></div>
+  </div>
+  <div class="detail-section">
+    <div class="detail-label"><span class="icon">🍀</span>幸运信息</div>
+    <div class="detail-lucky">
+      <span>🎨 <span id="detail-color"></span></span>
+      <span>🔢 <span id="detail-num"></span></span>
+    </div>
+  </div>
+</div>
+
+<script>
+const ELEMENTS=[
+  {key:'fire',name:'火象',icon:'🔥',sub:'热情 · 行动 · 直觉',color:'#F87171',signs:[
+    {sym:'♈',name:'白羊座',nameEn:'Aries',date:'3月21日-4月19日',m:3,d:21,m2:4,d2:19,planet:'火星',traits:'热情冲动、勇敢直率、领导力强、竞争意识浓厚',pros:'勇敢、热情、乐观、行动力强、领导才能',cons:'冲动、急躁、自我中心、缺乏耐心',match:'狮子座、射手座、双子座',luckyColor:'红色',luckyNum:'9',desc:'黄道十二宫的第一宫，出生在春分时节，象征着新生与开始。白羊座的人如同初春的嫩芽，充满生命力与冲劲。'},
+    {sym:'♌',name:'狮子座',nameEn:'Leo',date:'7月23日-8月22日',m:7,d:23,m2:8,d2:22,planet:'太阳',traits:'自信大方、热情洋溢、天生的领导者、喜欢成为焦点',pros:'自信、慷慨、忠诚、有领导力、有创造力',cons:'自负、固执、爱面子、过于强势',match:'白羊座、射手座、双子座',luckyColor:'金色',luckyNum:'5',desc:'黄道十二宫的第五宫，守护星为太阳。狮子座的人天生具有王者风范，光芒四射，热爱生活，渴望被关注与认可。'},
+    {sym:'♐',name:'射手座',nameEn:'Sagittarius',date:'11月23日-12月21日',m:11,d:23,m2:12,d2:21,planet:'木星',traits:'乐观开朗、热爱自由、追求真理、喜欢冒险与探索',pros:'乐观、诚实、热情、冒险精神、哲学思维',cons:'鲁莽、不负责任、口无遮拦、过于理想化',match:'白羊座、狮子座、天秤座',luckyColor:'紫色',luckyNum:'3',desc:'黄道十二宫的第九宫，守护星为木星。射手座的人如同手持弓箭的半人马，永远瞄准远方的目标，热爱自由与探索。'},
+  ]},
+  {key:'earth',name:'土象',icon:'🌍',sub:'务实 · 稳重 · 踏实',color:'#4ADE80',signs:[
+    {sym:'♉',name:'金牛座',nameEn:'Taurus',date:'4月20日-5月20日',m:4,d:20,m2:5,d2:20,planet:'金星',traits:'稳重踏实、务实可靠、热爱美食与美感、追求安定生活',pros:'可靠、耐心、务实、有责任感、热爱美好事物',cons:'固执、保守、占有欲强、抗拒变化',match:'处女座、摩羯座、巨蟹座',luckyColor:'绿色',luckyNum:'6',desc:'黄道十二宫的第二宫，守护星为金星。金牛座的人如同大地一般沉稳，重视物质与感官享受，追求安定的生活。'},
+    {sym:'♍',name:'处女座',nameEn:'Virgo',date:'8月23日-9月22日',m:8,d:23,m2:9,d2:22,planet:'水星',traits:'完美主义、注重细节、善于分析、服务精神强',pros:'细心、可靠、善于分析、勤奋、谦逊',cons:'挑剔、焦虑、过于苛求、神经质',match:'金牛座、摩羯座、巨蟹座',luckyColor:'藏青色',luckyNum:'5',desc:'黄道十二宫的第六宫，守护星为水星。处女座的人天生追求完美，善于观察与分析，注重细节，有着强烈的服务精神。'},
+    {sym:'♑',name:'摩羯座',nameEn:'Capricorn',date:'12月22日-1月19日',m:12,d:22,m2:1,d2:19,planet:'土星',traits:'务实上进、有责任感、自律性强、重视事业与社会地位',pros:'自律、有责任感、务实、坚韧、有野心',cons:'悲观、固执、过于严肃、不善表达情感',match:'金牛座、处女座、双鱼座',luckyColor:'棕色',luckyNum:'8',desc:'黄道十二宫的第十宫，守护星为土星。摩羯座的人如同攀登高山的山羊，脚踏实地，目标明确，是天生的事业型人才。'},
+  ]},
+  {key:'air',name:'风象',icon:'💨',sub:'智慧 · 沟通 · 理性',color:'#38BDF8',signs:[
+    {sym:'♊',name:'双子座',nameEn:'Gemini',date:'5月21日-6月21日',m:5,d:21,m2:6,d2:21,planet:'水星',traits:'聪明机智、善于沟通、好奇心强、思维敏捷多变',pros:'聪明、适应力强、善于沟通、机智、多才多艺',cons:'善变、不安分、缺乏专注、表面化',match:'天秤座、水瓶座、白羊座',luckyColor:'黄色',luckyNum:'5',desc:'黄道十二宫的第三宫，守护星为水星。双子座的人思维如风般敏捷，好奇心旺盛，善于交际，是天生的沟通者。'},
+    {sym:'♎',name:'天秤座',nameEn:'Libra',date:'9月23日-10月23日',m:9,d:23,m2:10,d2:23,planet:'金星',traits:'优雅和谐、追求平衡、善于社交、有审美眼光',pros:'优雅、公平、善于交际、有审美、合作精神',cons:'优柔寡断、依赖性强、回避冲突、虚荣',match:'双子座、水瓶座、射手座',luckyColor:'粉色',luckyNum:'6',desc:'黄道十二宫的第七宫，守护星为金星。天秤座的人如同手持天平的正义女神，追求和谐与平衡，热爱美与公正。'},
+    {sym:'♒',name:'水瓶座',nameEn:'Aquarius',date:'1月20日-2月18日',m:1,d:20,m2:2,d2:18,planet:'天王星',traits:'独立创新、思想前卫、人道主义、追求自由平等',pros:'独立、创新、理性、人道主义、友善',cons:'叛逆、冷漠、固执己见、不合群',match:'双子座、天秤座、射手座',luckyColor:'天蓝色',luckyNum:'4',desc:'黄道十二宫的第十一宫，守护星为天王星。水瓶座的人思想超前，特立独行，关心人类未来，是天生的改革者。'},
+  ]},
+  {key:'water',name:'水象',icon:'💧',sub:'感性 · 直觉 · 共情',color:'#A78BFA',signs:[
+    {sym:'♋',name:'巨蟹座',nameEn:'Cancer',date:'6月22日-7月22日',m:6,d:22,m2:7,d2:22,planet:'月亮',traits:'温柔敏感、重视家庭、直觉力强、保护欲旺盛',pros:'温柔、体贴、忠诚、有同情心、记忆力强',cons:'情绪化、多愁善感、依赖性强、退缩',match:'天蝎座、双鱼座、金牛座',luckyColor:'银色',luckyNum:'2',desc:'黄道十二宫的第四宫，守护星为月亮。巨蟹座的人如同蟹壳下柔软的内心，外表坚硬内心温柔，重视家庭与情感。'},
+    {sym:'♏',name:'天蝎座',nameEn:'Scorpio',date:'10月24日-11月22日',m:10,d:24,m2:11,d2:22,planet:'冥王星',traits:'神秘深邃、意志坚定、洞察力强、感情浓烈',pros:'坚定、深情、有洞察力、意志坚强、忠诚',cons:'多疑、占有欲强、报复心重、固执',match:'巨蟹座、双鱼座、摩羯座',luckyColor:'暗红色',luckyNum:'4',desc:'黄道十二宫的第八宫，守护星为冥王星。天蝎座的人如同蝎子般神秘而强大，感情深沉，有着惊人的意志力与洞察力。'},
+    {sym:'♓',name:'双鱼座',nameEn:'Pisces',date:'2月19日-3月20日',m:2,d:19,m2:3,d2:20,planet:'海王星',traits:'浪漫感性、富同情心、想象力丰富、直觉敏锐',pros:'善良、有同情心、富有想象力、直觉强、无私',cons:'逃避现实、优柔寡断、情绪化、不切实际',match:'巨蟹座、天蝎座、摩羯座',luckyColor:'海蓝色',luckyNum:'7',desc:'黄道十二宫的第十二宫，守护星为海王星。双鱼座的人如同游弋在梦境中的鱼儿，温柔浪漫，富有同情心与艺术天赋。'},
+  ]},
+];
+
+function getAllSigns(){
+  const all=[];
+  ELEMENTS.forEach(e=>e.signs.forEach(s=>all.push({...s,element:e})));
+  return all;
+}
+
+function getCurrentSignIdx(){
+  const now=new Date(),m=now.getMonth()+1,d=now.getDate();
+  const all=getAllSigns();
+  for(let i=0;i<all.length;i++){
+    const s=all[i];
+    if(s.m===s.m2){
+      if(m===s.m&&d>=s.d&&d<=s.d2) return i;
+    } else {
+      if((m===s.m&&d>=s.d)||(m===s.m2&&d<=s.d2)) return i;
+    }
+  }
+  return 0;
+}
+
+function renderCurrent(){
+  const idx=getCurrentSignIdx();
+  const all=getAllSigns();
+  const s=all[idx];
+  const c=s.element.color;
+  const card=document.getElementById('current-card');
+  card.style.borderColor=c+'40';
+  card.style.boxShadow=`0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06),0 0 40px ${c}15`;
+  document.getElementById('current-num').textContent=`No.${String(idx+1).padStart(2,'0')} / 12`;
+  document.getElementById('current-symbol').textContent=s.sym;
+  document.getElementById('current-symbol').style.color=c;
+  document.getElementById('current-name').textContent=s.name;
+  document.getElementById('current-name').style.color=c;
+  document.getElementById('current-name-en').textContent=s.nameEn;
+  document.getElementById('current-element').textContent=s.element.name;
+  document.getElementById('current-planet').textContent=s.planet;
+  document.getElementById('current-date').textContent=s.date;
+  document.getElementById('current-dot').style.background=c;
+  document.getElementById('current-dot').style.boxShadow=`0 0 8px ${c}`;
+  document.getElementById('current-traits').textContent=s.traits;
+}
+
+function renderElements(){
+  const container=document.getElementById('elements-container');
+  const currentIdx=getCurrentSignIdx();
+  let counter=0;
+  let html='';
+  ELEMENTS.forEach(el=>{
+    html+=`<div class="element-section">
+      <div class="element-header">
+        <div class="element-icon" style="background:${el.color}20;border:1px solid ${el.color}30">${el.icon}</div>
+        <div><div class="element-title" style="color:${el.color}">${el.name}星座</div><div class="element-sub">${el.sub}</div></div>
+        <div class="element-line" style="background:linear-gradient(90deg,${el.color}30,transparent)"></div>
+      </div>
+      <div class="signs-grid">`;
+    el.signs.forEach(s=>{
+      const isCurrent=counter===currentIdx;
+      const idx=counter;
+      html+=`<div class="sign-card ${el.key}${isCurrent?' current':''}" data-idx="${idx}" onclick="openDetail(${idx})">
+        <div class="sign-num">${String(idx+1).padStart(2,'0')}</div>
+        <div class="sign-sym">${s.sym}</div>
+        <div class="sign-name">${s.name}</div>
+        <div class="sign-date">${s.date}</div>
+        <div class="sign-trait">${s.traits.split('、').slice(0,3).join(' · ')}</div>
+      </div>`;
+      counter++;
+    });
+    html+=`</div></div>`;
+  });
+  container.innerHTML=html;
+}
+
+function renderWheel(){
+  const svg=document.getElementById('wheel-svg');
+  const cx=200,cy=200,r=135;
+  const all=getAllSigns();
+  const currentIdx=getCurrentSignIdx();
+  let html='';
+
+  html+=`<defs><filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+
+  html+=`<circle cx="${cx}" cy="${cy}" r="${r+22}" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="1"/>`;
+  for(let i=0;i<12;i++){
+    const a=(i/12)*Math.PI*2-Math.PI/2;
+    html+=`<line x1="${cx+Math.cos(a)*(r+18)}" y1="${cy+Math.sin(a)*(r+18)}" x2="${cx+Math.cos(a)*(r+22)}" y2="${cy+Math.sin(a)*(r+22)}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`;
+  }
+  html+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>`;
+  html+=`<circle cx="${cx}" cy="${cy}" r="48" fill="rgba(255,255,255,.025)" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`;
+  html+=`<circle cx="${cx}" cy="${cy}" r="48" fill="none" stroke="${all[currentIdx].element.color}" stroke-width="1" opacity=".3"/>`;
+
+  const cur=all[currentIdx];
+  html+=`<text x="${cx}" y="${cy-8}" text-anchor="middle" fill="${cur.element.color}" font-size="22">${cur.sym}</text>`;
+  html+=`<text x="${cx}" y="${cy+10}" text-anchor="middle" fill="${cur.element.color}" font-size="11" font-weight="700">${cur.name}</text>`;
+  html+=`<text x="${cx}" y="${cy+24}" text-anchor="middle" fill="#7A7A9A" font-size="8">${cur.nameEn}</text>`;
+
+  for(let i=0;i<12;i++){
+    const angle1=(i/12)*Math.PI*2-Math.PI/2;
+    const angle2=((i+1)/12)*Math.PI*2-Math.PI/2;
+    const midAngle=(angle1+angle2)/2;
+    const s=all[i];
+    const isCurrent=i===currentIdx;
+    const x1=cx+Math.cos(angle1)*r,y1=cy+Math.sin(angle1)*r;
+    const x2=cx+Math.cos(angle2)*r,y2=cy+Math.sin(angle2)*r;
+    const ri=r-36,xi1=cx+Math.cos(angle1)*ri,yi1=cy+Math.sin(angle1)*ri,xi2=cx+Math.cos(angle2)*ri,yi2=cy+Math.sin(angle2)*ri;
+    const opacity=isCurrent?.3:.1;
+    html+=`<path class="sector" data-idx="${i}" d="M ${xi1} ${yi1} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} L ${xi2} ${yi2} Z" fill="${s.element.color}" opacity="${opacity}" onmouseenter="onWheelHover(${i})" onmouseleave="onWheelLeave()"/>`;
+    html+=`<line x1="${xi1}" y1="${yi1}" x2="${x1}" y2="${y1}" stroke="rgba(255,255,255,.05)" stroke-width="1"/>`;
+    const labelR=r-18;
+    const lx=cx+Math.cos(midAngle)*labelR,ly=cy+Math.sin(midAngle)*labelR;
+    html+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="${isCurrent?s.element.color:'rgba(255,255,255,.5)'}" font-size="${isCurrent?16:13}" font-weight="${isCurrent?700:400}" onmouseenter="onWheelHover(${i})" onmouseleave="onWheelLeave()">${s.sym}</text>`;
+    if(isCurrent){
+      const dotR=r+10,dx=cx+Math.cos(midAngle)*dotR,dy=cy+Math.sin(midAngle)*dotR;
+      html+=`<circle cx="${dx}" cy="${dy}" r="4" fill="${s.element.color}" filter="url(#glow)"/>`;
+      html+=`<circle cx="${dx}" cy="${dy}" r="9" fill="${s.element.color}" opacity=".2"><animate attributeName="r" values="9;13;9" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;0;.2" dur="2s" repeatCount="indefinite"/></circle>`;
+    }
+  }
+
+  const elLabels=[
+    {label:'火',angle:-Math.PI/2+Math.PI/12*3,color:'#F87171'},
+    {label:'土',angle:Math.PI/12*6,color:'#4ADE80'},
+    {label:'风',angle:Math.PI/12*9,color:'#38BDF8'},
+    {label:'水',angle:Math.PI/12*12,color:'#A78BFA'},
+  ];
+  // Actually let's place element labels at the center of each element group
+  const elAngles=[
+    {label:'火',idx:0,color:'#F87171'},
+    {label:'土',idx:3,color:'#4ADE80'},
+    {label:'风',idx:6,color:'#38BDF8'},
+    {label:'水',idx:9,color:'#A78BFA'},
+  ];
+  elAngles.forEach(e=>{
+    const midAngle=((e.idx+1.5)/12)*Math.PI*2-Math.PI/2;
+    const lx=cx+Math.cos(midAngle)*(r+38),ly=cy+Math.sin(midAngle)*(r+38);
+    html+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="${e.color}" font-size="14" font-weight="700" opacity=".5">${e.label}</text>`;
+  });
+
+  svg.innerHTML=html;
+}
+
+function onWheelHover(idx){updateCenter(idx)}
+function onWheelLeave(){renderCurrent()}
+
+function updateCenter(idx){
+  const all=getAllSigns();
+  const s=all[idx];
+  const c=s.element.color;
+  const card=document.getElementById('current-card');
+  card.style.borderColor=c+'40';
+  card.style.boxShadow=`0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06),0 0 40px ${c}15`;
+  document.getElementById('current-num').textContent=`No.${String(idx+1).padStart(2,'0')} / 12`;
+  document.getElementById('current-symbol').textContent=s.sym;
+  document.getElementById('current-symbol').style.color=c;
+  document.getElementById('current-name').textContent=s.name;
+  document.getElementById('current-name').style.color=c;
+  document.getElementById('current-name-en').textContent=s.nameEn;
+  document.getElementById('current-element').textContent=s.element.name;
+  document.getElementById('current-planet').textContent=s.planet;
+  document.getElementById('current-date').textContent=s.date;
+  document.getElementById('current-dot').style.background=c;
+  document.getElementById('current-dot').style.boxShadow=`0 0 8px ${c}`;
+  document.getElementById('current-traits').textContent=s.traits;
+}
+
+function openDetail(idx){
+  const all=getAllSigns();
+  const s=all[idx];
+  const c=s.element.color;
+  document.getElementById('detail-sym').textContent=s.sym;
+  document.getElementById('detail-sym').style.color=c;
+  document.getElementById('detail-name').textContent=s.name;
+  document.getElementById('detail-name').style.color=c;
+  document.getElementById('detail-name-en').textContent=s.nameEn;
+  document.getElementById('detail-date').textContent=s.date;
+  document.getElementById('detail-tags').innerHTML=`
+    <span class="detail-tag" style="color:${c};border-color:${c}40">${s.element.icon} ${s.element.name}</span>
+    <span class="detail-tag">🪐 ${s.planet}</span>
+  `;
+  document.getElementById('detail-desc').textContent=s.desc;
+  document.getElementById('detail-traits').textContent=s.traits;
+  document.getElementById('detail-pros').textContent=s.pros;
+  document.getElementById('detail-cons').textContent=s.cons;
+  document.getElementById('detail-match').textContent=s.match;
+  document.getElementById('detail-color').textContent=s.luckyColor;
+  document.getElementById('detail-num').textContent=s.luckyNum;
+  document.getElementById('detail-overlay').classList.add('show');
+  document.getElementById('detail-panel').classList.add('show');
+}
+
+function closeDetail(){
+  document.getElementById('detail-overlay').classList.remove('show');
+  document.getElementById('detail-panel').classList.remove('show');
+}
+
+function initStars(){
+  const container=document.getElementById('stars');
+  for(let i=0;i<60;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    s.style.left=Math.random()*100+'%';
+    s.style.top=Math.random()*100+'%';
+    const size=1+Math.random()*2;
+    s.style.width=s.style.height=size+'px';
+    s.style.animationDuration=(2+Math.random()*4)+'s';
+    s.style.animationDelay=Math.random()*3+'s';
+    container.appendChild(s);
+  }
+  for(let i=0;i<3;i++){
+    const s=document.createElement('div');
+    s.className='shooting-star';
+    s.style.left=Math.random()*60+'%';
+    s.style.top=Math.random()*40+'%';
+    s.style.animationDelay=(i*4+Math.random()*2)+'s';
+    container.appendChild(s);
+  }
+}
+
+initStars();
+renderCurrent();
+renderElements();
+renderWheel();
+</script>
+</body>
+</html>
