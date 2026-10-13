@@ -7,12 +7,12 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
-    --bg:#041821; --bg2:#062a3a;
-    --card:rgba(255,255,255,0.04); --card2:rgba(255,255,255,0.07);
-    --border:rgba(255,255,255,0.08);
-    --text:#E0F4F8; --dim:#6A9BA8; --dim2:#3A6B78;
-    --water:#38BDF8; --water2:#0EA5E9; --water3:#06B6D4; --aqua:#22D3EE;
-    --mint:#4ADE80; --warn:#FBBF24; --danger:#F87171;
+    --bg:#020e16; --bg2:#042030;
+    --card:rgba(255,255,255,0.035); --card2:rgba(255,255,255,0.065);
+    --border:rgba(120,200,230,0.09); --border2:rgba(120,200,230,0.14);
+    --text:#E2F4FA; --dim:#5E94A8; --dim2:#2E5C70;
+    --water:#38BDF8; --water2:#0EA5E9; --water3:#06B6D4; --aqua:#22D3EE; --deep:#0891B2;
+    --mint:#4ADE80; --mint2:#34D399; --warn:#FBBF24; --danger:#F87171; --gold:#FCD34D;
   }
   body{
     background:var(--bg); color:var(--text);
@@ -22,250 +22,326 @@
   body::before{
     content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
     background:
-      radial-gradient(ellipse at 30% 0%,rgba(56,189,248,.10),transparent 50%),
-      radial-gradient(ellipse at 70% 30%,rgba(34,211,238,.06),transparent 45%),
-      radial-gradient(ellipse at 50% 100%,rgba(14,165,233,.05),transparent 50%);
+      radial-gradient(ellipse 80% 60% at 50% -10%,rgba(56,189,248,.12),transparent 60%),
+      radial-gradient(ellipse 60% 40% at 20% 50%,rgba(34,211,238,.05),transparent 50%),
+      radial-gradient(ellipse 70% 50% at 80% 80%,rgba(8,145,178,.06),transparent 50%);
+  }
+  body::after{
+    content:''; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
+    background:
+      repeating-linear-gradient(0deg,transparent 0,transparent 2px,rgba(56,189,248,.008) 2px,rgba(56,189,248,.008) 4px);
   }
 
   .bubbles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
   .bubble{
-    position:absolute;bottom:-20px;border-radius:50%;
-    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.25),rgba(56,189,248,.08));
-    border:1px solid rgba(255,255,255,.06);
+    position:absolute;bottom:-30px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.3),rgba(56,189,248,.06));
+    border:1px solid rgba(255,255,255,.05);
     animation:bubbleRise linear infinite;
   }
   @keyframes bubbleRise{
-    0%{transform:translateY(0) translateX(0);opacity:0}
-    10%{opacity:.6}
-    50%{transform:translateY(-50vh) translateX(15px)}
-    90%{opacity:.4}
-    100%{transform:translateY(-110vh) translateX(-10px);opacity:0}
+    0%{transform:translateY(0) translateX(0) scale(.8);opacity:0}
+    8%{opacity:.5}
+    50%{transform:translateY(-50vh) translateX(20px) scale(1)}
+    92%{opacity:.3}
+    100%{transform:translateY(-110vh) translateX(-15px) scale(.7);opacity:0}
   }
 
-  .app{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:24px 20px}
+  .caustics{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;opacity:.4}
+  .caustic{position:absolute;width:200px;height:200px;border-radius:50%;filter:blur(40px);animation:causticDrift ease-in-out infinite}
+  @keyframes causticDrift{
+    0%,100%{transform:translate(0,0) scale(1);opacity:.15}
+    33%{transform:translate(40px,-30px) scale(1.2);opacity:.08}
+    66%{transform:translate(-30px,20px) scale(.9);opacity:.12}
+  }
 
-  .header{text-align:center;margin-bottom:20px}
+  .app{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:20px 20px 32px}
+
+  .header{text-align:center;margin-bottom:22px;position:relative}
   .header h1{
-    font-size:1.9rem;font-weight:800;letter-spacing:-0.04em;
-    background:linear-gradient(135deg,var(--water),var(--aqua),var(--mint));
+    font-size:2rem;font-weight:800;letter-spacing:-0.04em;
+    background:linear-gradient(135deg,var(--water) 0%,var(--aqua) 40%,var(--mint2) 70%,var(--water) 100%);
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-    background-size:200% 200%;animation:gradShift 6s ease infinite;
+    background-size:250% 250%;animation:gradShift 8s ease infinite;
   }
   @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-  .header .date{font-size:.78rem;color:var(--dim);margin-top:4px;letter-spacing:.03em}
+  .header .date{font-size:.76rem;color:var(--dim);margin-top:5px;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+  .header .streak{
+    display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:4px 14px;
+    border-radius:20px;font-size:.68rem;font-weight:700;letter-spacing:.05em;
+    background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(252,211,77,.06));
+    border:1px solid rgba(251,191,36,.18);color:var(--gold);
+  }
 
-  .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+  .main-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;margin-bottom:14px}
   @media(max-width:640px){.main-grid{grid-template-columns:1fr}}
 
   .glass{
-    background:linear-gradient(135deg,var(--card2),var(--card));
-    border:1px solid var(--border); border-radius:20px;
-    backdrop-filter:blur(20px) saturate(1.2); -webkit-backdrop-filter:blur(20px) saturate(1.2);
-    box-shadow:0 8px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05);
+    background:linear-gradient(160deg,var(--card2),var(--card));
+    border:1px solid var(--border); border-radius:22px;
+    backdrop-filter:blur(24px) saturate(1.3); -webkit-backdrop-filter:blur(24px) saturate(1.3);
+    box-shadow:0 10px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06),inset 0 -1px 0 rgba(0,0,0,.1);
+    position:relative;
   }
 
-  .cup-card{padding:24px 20px;text-align:center;position:relative;overflow:hidden}
-  .cup-card::after{
-    content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
-    background:linear-gradient(105deg,transparent,rgba(255,255,255,.03),transparent);
-    animation:shimmer 6s infinite;
-  }
-  @keyframes shimmer{0%{left:-100%}100%{left:200%}}
-
-  .cup-wrap{position:relative;width:180px;height:260px;margin:0 auto}
-  .cup-svg{width:100%;height:100%}
-  .cup-water-fill{transition:all .8s cubic-bezier(.4,0,.2,1)}
-  .cup-wave1{animation:waveMove 3s linear infinite}
-  .cup-wave2{animation:waveMove 4s linear infinite reverse}
-  @keyframes waveMove{0%{transform:translateX(0)}100%{transform:translateX(-40px)}}
-  .cup-bubble{animation:cupBubble 2.5s ease-in infinite}
-  @keyframes cupBubble{
-    0%{transform:translateY(0);opacity:0}
-    20%{opacity:.5}
-    100%{transform:translateY(-60px);opacity:0}
-  }
-
-  .cup-stats{margin-top:10px}
-  .cup-amount{font-size:2.2rem;font-weight:900;letter-spacing:-0.03em;color:var(--water)}
-  .cup-amount .unit{font-size:.9rem;font-weight:500;color:var(--dim);margin-left:4px}
-  .cup-goal-text{font-size:.72rem;color:var(--dim);margin-top:2px}
-  .cup-percent{
-    display:inline-block;margin-top:6px;padding:3px 14px;border-radius:20px;
-    font-size:.7rem;font-weight:700;letter-spacing:.05em;
-    background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.2);color:var(--water);
-    transition:all .3s;
-  }
-  .cup-percent.done{background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.25);color:var(--mint)}
-
-  .progress-card{padding:20px;display:flex;flex-direction:column;justify-content:center}
-  .progress-title{font-size:.72rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
-  .ring-wrap{display:flex;align-items:center;gap:16px}
-  .ring-svg{width:100px;height:100px;flex-shrink:0}
-  .ring-bg{fill:none;stroke:rgba(255,255,255,.06);stroke-width:8}
-  .ring-fg{fill:none;stroke:url(#ringGrad);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
-  .ring-center{font-size:1.3rem;font-weight:900;fill:var(--water)}
-  .ring-info{flex:1}
-  .ring-info .label{font-size:.68rem;color:var(--dim);margin-bottom:2px}
-  .ring-info .val{font-size:1.1rem;font-weight:800;margin-bottom:8px}
-  .ring-info .val .small{font-size:.75rem;color:var(--dim);font-weight:500}
-  .ring-info .remaining{font-size:.72rem;color:var(--aqua);padding:4px 10px;background:rgba(34,211,238,.08);border-radius:8px;display:inline-block}
-
-  .action-card{padding:20px;margin-bottom:16px}
-  .action-title{font-size:.72rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
-  .action-row{display:flex;gap:10px;flex-wrap:wrap}
-  .btn-water{
-    flex:1;min-width:70px;padding:12px 8px;border-radius:14px;border:1px solid var(--border);
-    background:var(--card);color:var(--text);font-size:.85rem;font-weight:700;cursor:pointer;
-    transition:all .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;align-items:center;gap:3px;
-  }
-  .btn-water .icon{font-size:1.3rem}
-  .btn-water .ml{font-size:.62rem;color:var(--dim);font-weight:500}
-  .btn-water:hover{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.3);transform:translateY(-2px);box-shadow:0 6px 20px rgba(56,189,248,.15)}
-  .btn-water:active{transform:translateY(0) scale(.97)}
-  .btn-water.custom{background:rgba(34,211,238,.06);border-color:rgba(34,211,238,.15)}
-  .btn-water.undo{background:rgba(248,113,113,.04);border-color:rgba(248,113,113,.1)}
-  .btn-water.undo:hover{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.25);box-shadow:0 6px 20px rgba(248,113,113,.1)}
-
-  .record-card{padding:20px;margin-bottom:16px}
-  .record-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-  .record-list{max-height:180px;overflow-y:auto}
-  .record-list::-webkit-scrollbar{width:4px}
-  .record-list::-webkit-scrollbar-thumb{background:rgba(56,189,248,.2);border-radius:2px}
-  .record-item{
-    display:flex;align-items:center;gap:10px;padding:8px 0;
-    border-bottom:1px solid rgba(255,255,255,.03);
-    animation:slideIn .3s ease;
-  }
-  @keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
-  .record-item:last-child{border-bottom:none}
-  .record-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor}
-  .record-time{font-size:.75rem;color:var(--dim);font-variant-numeric:tabular-nums}
-  .record-ml{font-size:.85rem;font-weight:700;margin-left:auto}
-  .record-empty{text-align:center;padding:20px 0;color:var(--dim2);font-size:.8rem}
-
-  .week-card{padding:20px;margin-bottom:16px}
-  .week-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-  .week-summary{display:flex;gap:16px;font-size:.72rem;color:var(--dim)}
-  .week-summary span{display:flex;align-items:center;gap:4px}
-  .week-summary .num{font-weight:800;color:var(--text);font-size:.9rem}
-  .week-chart{display:flex;justify-content:space-between;align-items:flex-end;gap:6px;height:140px;margin-bottom:8px}
-  .week-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
-  .week-bar{
-    width:100%;max-width:36px;border-radius:8px 8px 4px 4px;min-height:4px;
-    transition:all .5s cubic-bezier(.4,0,.2,1);position:relative;cursor:pointer;
-  }
-  .week-bar.today{box-shadow:0 0 12px rgba(56,189,248,.3)}
-  .week-bar:hover{filter:brightness(1.2)}
-  .week-bar .tip{
-    position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
-    background:rgba(0,0,0,.8);padding:4px 8px;border-radius:6px;font-size:.65rem;white-space:nowrap;
-    opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;
-  }
-  .week-bar:hover .tip{opacity:1}
-  .week-labels{display:flex;justify-content:space-between;gap:6px}
-  .week-label{flex:1;text-align:center;font-size:.65rem;color:var(--dim)}
-  .week-label.today{color:var(--water);font-weight:700}
-  .week-avg-line{
-    position:absolute;left:0;right:0;border-top:1px dashed rgba(251,191,36,.3);
+  .cup-card{padding:20px 16px;text-align:center;overflow:hidden}
+  .cup-card::before{
+    content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+    background:radial-gradient(ellipse 40% 30% at 50% 40%,rgba(56,189,248,.06),transparent);
     pointer-events:none;
   }
-  .week-avg-label{position:absolute;right:0;top:-16px;font-size:.6rem;color:var(--warn);background:var(--bg);padding:0 4px}
+  .cup-card::after{
+    content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+    background:linear-gradient(105deg,transparent,rgba(255,255,255,.04),transparent);
+    animation:shimmer 7s infinite;pointer-events:none;
+  }
+  @keyframes shimmer{0%{left:-100%}100%{left:250%}}
 
-  .settings-card{padding:16px 20px}
+  .cup-wrap{position:relative;width:190px;height:280px;margin:0 auto;z-index:1}
+  .cup-svg{width:100%;height:100%;overflow:visible}
+  .cup-water-fill{transition:all .9s cubic-bezier(.34,1.2,.64,1)}
+  .cup-wave1{animation:waveMove1 3.5s linear infinite}
+  .cup-wave2{animation:waveMove2 5s linear infinite}
+  .cup-wave3{animation:waveMove1 4.5s linear infinite reverse}
+  @keyframes waveMove1{0%{transform:translateX(0)}100%{transform:translateX(-48px)}}
+  @keyframes waveMove2{0%{transform:translateX(0)}100%{transform:translateX(48px)}}
+  .cup-bubble{animation:cupBubble 3s ease-in infinite}
+  @keyframes cupBubble{
+    0%{transform:translateY(0) scale(.6);opacity:0}
+    15%{opacity:.6;transform:translateY(-10px) scale(1)}
+    100%{transform:translateY(-80px) scale(.4);opacity:0}
+  }
+  .cup-splash{animation:cupSplash .6s ease-out forwards}
+  @keyframes cupSplash{
+    0%{transform:translateY(0) scale(1);opacity:1}
+    100%{transform:translateY(-30px) scale(2.5);opacity:0}
+  }
+
+  .cup-stats{margin-top:8px;position:relative;z-index:1}
+  .cup-amount{font-size:2.4rem;font-weight:900;letter-spacing:-0.04em;color:var(--water);text-shadow:0 0 24px rgba(56,189,248,.3);font-variant-numeric:tabular-nums}
+  .cup-amount .unit{font-size:.85rem;font-weight:500;color:var(--dim);margin-left:3px;text-shadow:none}
+  .cup-goal-text{font-size:.7rem;color:var(--dim);margin-top:0px;letter-spacing:.02em}
+  .cup-percent{
+    display:inline-block;margin-top:8px;padding:4px 16px;border-radius:20px;
+    font-size:.68rem;font-weight:700;letter-spacing:.06em;
+    background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.18);color:var(--water);
+    transition:all .4s;
+  }
+  .cup-percent.done{background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.2);color:var(--mint);box-shadow:0 0 16px rgba(74,222,128,.15)}
+
+  .progress-card{padding:18px 20px;display:flex;flex-direction:column;justify-content:center}
+  .progress-title{font-size:.68rem;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+  .ring-wrap{display:flex;align-items:center;gap:18px}
+  .ring-svg{width:108px;height:108px;flex-shrink:0;filter:drop-shadow(0 0 8px rgba(56,189,248,.15))}
+  .ring-bg{fill:none;stroke:rgba(255,255,255,.05);stroke-width:7}
+  .ring-fg{fill:none;stroke:url(#ringGrad);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.34,1.2,.64,1)}
+  .ring-glow{fill:none;stroke:url(#ringGrad);stroke-width:3;stroke-linecap:round;opacity:.3;transition:stroke-dashoffset .9s cubic-bezier(.34,1.2,.64,1)}
+  .ring-center{font-size:1.4rem;font-weight:900;fill:var(--water);font-variant-numeric:tabular-nums}
+  .ring-info{flex:1;min-width:0}
+  .ring-info .label{font-size:.66rem;color:var(--dim);margin-bottom:1px;letter-spacing:.04em}
+  .ring-info .val{font-size:1.15rem;font-weight:800;margin-bottom:10px;font-variant-numeric:tabular-nums}
+  .ring-info .val .small{font-size:.72rem;color:var(--dim);font-weight:500}
+  .ring-info .remaining{font-size:.7rem;color:var(--aqua);padding:5px 12px;background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.1);border-radius:10px;display:inline-block;font-variant-numeric:tabular-nums}
+  .ring-info .remaining.done{color:var(--mint);background:rgba(74,222,128,.07);border-color:rgba(74,222,128,.12)}
+
+  .action-card{padding:18px 20px;margin-bottom:14px}
+  .action-title{font-size:.68rem;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}
+  .action-row{display:flex;gap:8px;flex-wrap:wrap}
+  .btn-water{
+    flex:1;min-width:68px;padding:11px 6px;border-radius:16px;border:1px solid var(--border);
+    background:var(--card);color:var(--text);font-size:.82rem;font-weight:700;cursor:pointer;
+    transition:all .25s cubic-bezier(.34,1.4,.64,1);display:flex;flex-direction:column;align-items:center;gap:2px;
+    position:relative;overflow:hidden;
+  }
+  .btn-water .icon{font-size:1.25rem;transition:transform .25s}
+  .btn-water .ml{font-size:.6rem;color:var(--dim);font-weight:500;font-variant-numeric:tabular-nums}
+  .btn-water::before{
+    content:'';position:absolute;inset:0;border-radius:16px;
+    background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),rgba(56,189,248,.15),transparent 60%);
+    opacity:0;transition:opacity .3s;
+  }
+  .btn-water:hover{border-color:rgba(56,189,248,.25);transform:translateY(-2px);box-shadow:0 8px 24px rgba(56,189,248,.12)}
+  .btn-water:hover::before{opacity:1}
+  .btn-water:hover .icon{transform:scale(1.15)}
+  .btn-water:active{transform:translateY(0) scale(.96)}
+  .btn-water.custom{background:rgba(34,211,238,.05);border-color:rgba(34,211,238,.12)}
+  .btn-water.custom:hover{border-color:rgba(34,211,238,.25);box-shadow:0 8px 24px rgba(34,211,238,.1)}
+  .btn-water.undo{background:rgba(248,113,113,.03);border-color:rgba(248,113,113,.08)}
+  .btn-water.undo:hover{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.2);box-shadow:0 8px 24px rgba(248,113,113,.08)}
+
+  .record-card{padding:18px 20px;margin-bottom:14px}
+  .record-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .record-list{max-height:170px;overflow-y:auto}
+  .record-list::-webkit-scrollbar{width:3px}
+  .record-list::-webkit-scrollbar-track{background:transparent}
+  .record-list::-webkit-scrollbar-thumb{background:rgba(56,189,248,.15);border-radius:2px}
+  .record-item{
+    display:flex;align-items:center;gap:10px;padding:7px 0;
+    border-bottom:1px solid rgba(255,255,255,.025);
+    animation:slideIn .35s cubic-bezier(.34,1.4,.64,1);
+  }
+  @keyframes slideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+  .record-item:last-child{border-bottom:none}
+  .record-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;box-shadow:0 0 10px currentColor}
+  .record-time{font-size:.73rem;color:var(--dim);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+  .record-ml{font-size:.82rem;font-weight:700;margin-left:auto;font-variant-numeric:tabular-nums}
+  .record-empty{text-align:center;padding:24px 0;color:var(--dim2);font-size:.78rem}
+
+  .week-card{padding:18px 20px;margin-bottom:14px}
+  .week-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+  .week-summary{display:flex;gap:14px;font-size:.7rem;color:var(--dim)}
+  .week-summary span{display:flex;align-items:center;gap:4px}
+  .week-summary .num{font-weight:800;color:var(--text);font-size:.88rem;font-variant-numeric:tabular-nums}
+  .week-chart-wrap{position:relative}
+  .week-goal-line{
+    position:absolute;left:0;right:0;border-top:1px dashed rgba(251,191,36,.25);
+    pointer-events:none;z-index:1;
+  }
+  .week-goal-label{position:absolute;right:-2px;top:-8px;font-size:.58rem;color:var(--warn);background:var(--bg);padding:1px 5px;border-radius:4px;font-variant-numeric:tabular-nums}
+  .week-chart{display:flex;justify-content:space-between;align-items:flex-end;gap:5px;height:130px;margin-bottom:6px;position:relative;z-index:2}
+  .week-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
+  .week-bar{
+    width:100%;max-width:34px;border-radius:6px 6px 3px 3px;min-height:3px;
+    transition:all .6s cubic-bezier(.34,1.2,.64,1);position:relative;cursor:pointer;
+  }
+  .week-bar.today{box-shadow:0 0 16px rgba(56,189,248,.25)}
+  .week-bar:hover{filter:brightness(1.25)}
+  .week-bar .tip{
+    position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+    background:rgba(2,14,22,.92);border:1px solid var(--border);padding:5px 10px;border-radius:8px;
+    font-size:.64rem;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;
+    backdrop-filter:blur(8px);font-variant-numeric:tabular-nums;
+  }
+  .week-bar:hover .tip{opacity:1}
+  .week-labels{display:flex;justify-content:space-between;gap:5px}
+  .week-label{flex:1;text-align:center;font-size:.62rem;color:var(--dim)}
+  .week-label.today{color:var(--water);font-weight:700}
+  .week-label .date-num{display:block;font-size:.55rem;color:var(--dim2);margin-top:1px;font-variant-numeric:tabular-nums}
+  .week-label.today .date-num{color:var(--dim)}
+
+  .settings-card{padding:14px 20px}
   .settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .settings-label{font-size:.8rem;color:var(--dim);display:flex;align-items:center;gap:6px}
+  .settings-label{font-size:.78rem;color:var(--dim);display:flex;align-items:center;gap:6px}
   .settings-control{display:flex;align-items:center;gap:8px}
   .settings-input{
-    width:70px;padding:6px 10px;border-radius:10px;border:1px solid var(--border);
-    background:var(--card);color:var(--text);font-size:.85rem;font-weight:700;text-align:center;
-    font-variant-numeric:tabular-nums;
+    width:72px;padding:6px 10px;border-radius:10px;border:1px solid var(--border);
+    background:var(--card);color:var(--text);font-size:.82rem;font-weight:700;text-align:center;
+    font-variant-numeric:tabular-nums;transition:border-color .2s;
   }
-  .settings-input:focus{outline:none;border-color:rgba(56,189,248,.4)}
-  .settings-unit{font-size:.72rem;color:var(--dim)}
+  .settings-input:focus{outline:none;border-color:rgba(56,189,248,.35)}
+  .settings-unit{font-size:.7rem;color:var(--dim)}
 
-  .footer{text-align:center;font-size:.65rem;color:var(--dim2);padding:8px 0}
+  .footer{text-align:center;font-size:.62rem;color:var(--dim2);padding:6px 0;letter-spacing:.04em}
 
   .toast{
-    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
-    background:linear-gradient(135deg,rgba(56,189,248,.15),rgba(34,211,238,.1));
-    border:1px solid rgba(56,189,248,.25);border-radius:16px;padding:12px 24px;
-    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-    font-size:.85rem;font-weight:600;z-index:300;opacity:0;
-    transition:all .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 32px rgba(0,0,0,.3);
+    position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(120px);
+    background:linear-gradient(135deg,rgba(56,189,248,.12),rgba(34,211,238,.08));
+    border:1px solid rgba(56,189,248,.2);border-radius:18px;padding:12px 26px;
+    backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    font-size:.84rem;font-weight:600;z-index:300;opacity:0;
+    transition:all .45s cubic-bezier(.34,1.56,.64,1);box-shadow:0 10px 40px rgba(0,0,0,.35);
+    display:flex;align-items:center;gap:8px;
   }
   .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-  .toast .icon{margin-right:6px}
+  .toast.done{background:linear-gradient(135deg,rgba(74,222,128,.12),rgba(52,211,153,.08));border-color:rgba(74,222,128,.2)}
 
   .custom-modal{
-    position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);
+    position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);
     z-index:250;opacity:0;pointer-events:none;transition:opacity .3s;
     display:flex;align-items:center;justify-content:center;
   }
   .custom-modal.show{opacity:1;pointer-events:auto}
   .custom-panel{
-    background:linear-gradient(135deg,rgba(10,30,40,.95),rgba(4,24,33,.98));
-    border:1px solid var(--border);border-radius:20px;padding:24px;width:90%;max-width:320px;
-    box-shadow:0 16px 48px rgba(0,0,0,.4);transform:scale(.9);transition:transform .3s;
+    background:linear-gradient(160deg,rgba(8,30,42,.96),rgba(2,14,22,.98));
+    border:1px solid var(--border2);border-radius:22px;padding:26px;width:90%;max-width:320px;
+    box-shadow:0 20px 60px rgba(0,0,0,.45);transform:scale(.92);transition:transform .35s cubic-bezier(.34,1.56,.64,1);
   }
   .custom-modal.show .custom-panel{transform:scale(1)}
-  .custom-title{font-size:1rem;font-weight:800;margin-bottom:16px;text-align:center}
-  .custom-slider{width:100%;margin:8px 0;-webkit-appearance:none;height:6px;border-radius:3px;background:rgba(56,189,248,.15);outline:none}
-  .custom-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--water);cursor:pointer;box-shadow:0 0 12px rgba(56,189,248,.5)}
-  .custom-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--water);cursor:pointer;border:none}
-  .custom-val{text-align:center;font-size:1.8rem;font-weight:900;color:var(--water);margin:8px 0}
-  .custom-val .unit{font-size:.9rem;color:var(--dim);font-weight:500}
-  .custom-actions{display:flex;gap:10px;margin-top:16px}
-  .custom-btn{flex:1;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s}
-  .custom-btn:hover{background:rgba(56,189,248,.1)}
-  .custom-btn.primary{background:rgba(56,189,248,.15);border-color:rgba(56,189,248,.3);color:var(--water)}
-  .custom-btn.primary:hover{background:rgba(56,189,248,.25)}
+  .custom-title{font-size:1rem;font-weight:800;margin-bottom:18px;text-align:center;letter-spacing:-0.02em}
+  .custom-slider{width:100%;margin:10px 0;-webkit-appearance:none;height:6px;border-radius:3px;background:rgba(56,189,248,.12);outline:none}
+  .custom-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--water);cursor:pointer;box-shadow:0 0 16px rgba(56,189,248,.5);transition:transform .15s}
+  .custom-slider::-webkit-slider-thumb:hover{transform:scale(1.15)}
+  .custom-slider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--water);cursor:pointer;border:none;box-shadow:0 0 16px rgba(56,189,248,.5)}
+  .custom-val{text-align:center;font-size:2rem;font-weight:900;color:var(--water);margin:10px 0;font-variant-numeric:tabular-nums;text-shadow:0 0 20px rgba(56,189,248,.3)}
+  .custom-val .unit{font-size:.85rem;color:var(--dim);font-weight:500;text-shadow:none}
+  .custom-quick{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
+  .custom-quick-btn{flex:1;min-width:48px;padding:6px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;font-variant-numeric:tabular-nums}
+  .custom-quick-btn:hover{background:rgba(56,189,248,.08);color:var(--water);border-color:rgba(56,189,248,.2)}
+  .custom-actions{display:flex;gap:10px;margin-top:18px}
+  .custom-btn{flex:1;padding:11px;border-radius:14px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.84rem;font-weight:700;cursor:pointer;transition:all .2s}
+  .custom-btn:hover{background:rgba(56,189,248,.08)}
+  .custom-btn.primary{background:linear-gradient(135deg,rgba(56,189,248,.18),rgba(34,211,238,.12));border-color:rgba(56,189,248,.3);color:var(--water)}
+  .custom-btn.primary:hover{background:linear-gradient(135deg,rgba(56,189,248,.28),rgba(34,211,238,.18))}
 </style>
 </head>
 <body>
 <div class="bubbles" id="bubbles"></div>
+<div class="caustics" id="caustics"></div>
 <div class="app">
   <div class="header">
     <h1>💧 喝水打卡</h1>
     <div class="date" id="today-date">—</div>
+    <div class="streak" id="streak-badge">🔥 连续打卡 0 天</div>
   </div>
 
   <div class="main-grid">
     <div class="glass cup-card">
       <div class="cup-wrap">
-        <svg class="cup-svg" viewBox="0 0 180 260" id="cup-svg">
+        <svg class="cup-svg" viewBox="0 0 190 280" id="cup-svg">
           <defs>
             <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#38BDF8" stop-opacity=".7"/>
-              <stop offset="50%" stop-color="#0EA5E9" stop-opacity=".85"/>
-              <stop offset="100%" stop-color="#06B6D4" stop-opacity=".95"/>
+              <stop offset="0%" stop-color="#38BDF8" stop-opacity=".55"/>
+              <stop offset="30%" stop-color="#0EA5E9" stop-opacity=".75"/>
+              <stop offset="100%" stop-color="#06B6D4" stop-opacity=".92"/>
             </linearGradient>
-            <linearGradient id="cupGrad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="rgba(255,255,255,.12)"/>
-              <stop offset="50%" stop-color="rgba(255,255,255,.04)"/>
-              <stop offset="100%" stop-color="rgba(255,255,255,.12)"/>
+            <linearGradient id="cupGlass" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="rgba(255,255,255,.14)"/>
+              <stop offset="20%" stop-color="rgba(255,255,255,.03)"/>
+              <stop offset="50%" stop-color="rgba(255,255,255,.01)"/>
+              <stop offset="80%" stop-color="rgba(255,255,255,.03)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,.14)"/>
             </linearGradient>
+            <linearGradient id="cupRim" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="rgba(255,255,255,.05)"/>
+              <stop offset="50%" stop-color="rgba(255,255,255,.25)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,.05)"/>
+            </linearGradient>
+            <radialGradient id="cupBottom" cx="50%" cy="100%" r="50%">
+              <stop offset="0%" stop-color="rgba(56,189,248,.08)"/>
+              <stop offset="100%" stop-color="transparent"/>
+            </radialGradient>
             <clipPath id="cupClip">
-              <path d="M 30 20 L 40 240 Q 40 250 50 250 L 130 250 Q 140 250 140 240 L 150 20 Z"/>
+              <path d="M 32 22 L 42 250 Q 42 260 52 260 L 138 260 Q 148 260 148 250 L 158 22 Z"/>
             </clipPath>
           </defs>
-          <path d="M 30 20 L 40 240 Q 40 250 50 250 L 130 250 Q 140 250 140 240 L 150 20 Z" fill="none" stroke="url(#cupGrad)" stroke-width="2"/>
-          <path d="M 28 20 L 152 20" stroke="rgba(255,255,255,.15)" stroke-width="3" stroke-linecap="round"/>
+          <ellipse cx="95" cy="262" rx="60" ry="6" fill="rgba(56,189,248,.06)" filter="blur(4px)"/>
+          <path d="M 32 22 L 42 250 Q 42 260 52 260 L 138 260 Q 148 260 148 250 L 158 22 Z" fill="url(#cupGlass)" stroke="url(#cupGlass)" stroke-width="1.5"/>
+          <path d="M 32 22 L 42 250 Q 42 260 52 260 L 138 260 Q 148 260 148 250 L 158 22 Z" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+          <ellipse cx="95" cy="22" rx="63" ry="5" fill="none" stroke="url(#cupRim)" stroke-width="2.5"/>
+          <ellipse cx="95" cy="22" rx="60" ry="4" fill="rgba(2,14,22,.4)" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
           <g clip-path="url(#cupClip)">
-            <rect class="cup-water-fill" id="water-fill" x="0" y="250" width="180" height="0" fill="url(#waterGrad)"/>
-            <path class="cup-wave1" id="wave1" d="M -40 0 Q -20 -6 0 0 T 40 0 T 80 0 T 120 0 T 160 0 T 200 0 T 240 0 L 240 20 L -40 20 Z" fill="rgba(56,189,248,.3)" opacity=".5"/>
-            <path class="cup-wave2" id="wave2" d="M -40 0 Q -20 5 0 0 T 40 0 T 80 0 T 120 0 T 160 0 T 200 0 T 240 0 L 240 20 L -40 20 Z" fill="rgba(34,211,238,.2)" opacity=".4"/>
-            <circle class="cup-bubble" cx="60" cy="240" r="4" fill="rgba(255,255,255,.15)" style="animation-delay:0s"/>
-            <circle class="cup-bubble" cx="100" cy="245" r="3" fill="rgba(255,255,255,.12)" style="animation-delay:.8s"/>
-            <circle class="cup-bubble" cx="80" cy="248" r="5" fill="rgba(255,255,255,.1)" style="animation-delay:1.5s"/>
+            <rect class="cup-water-fill" id="water-fill" x="0" y="260" width="190" height="0" fill="url(#waterGrad)"/>
+            <path class="cup-wave3" id="wave3" d="M -48 0 Q -24 -3 0 0 T 48 0 T 96 0 T 144 0 T 192 0 T 240 0 L 240 12 L -48 12 Z" fill="rgba(56,189,248,.15)" opacity=".3"/>
+            <path class="cup-wave1" id="wave1" d="M -48 0 Q -24 -7 0 0 T 48 0 T 96 0 T 144 0 T 192 0 T 240 0 L 240 14 L -48 14 Z" fill="rgba(56,189,248,.35)" opacity=".5"/>
+            <path class="cup-wave2" id="wave2" d="M -48 0 Q -24 5 0 0 T 48 0 T 96 0 T 144 0 T 192 0 T 240 0 L 240 10 L -48 10 Z" fill="rgba(34,211,238,.25)" opacity=".4"/>
+            <ellipse class="cup-water-fill" id="water-surface" x="0" y="260" cx="95" cy="260" rx="50" ry="3" fill="rgba(255,255,255,.12)" opacity=".6"/>
+            <circle class="cup-bubble" cx="55" cy="255" r="3.5" fill="rgba(255,255,255,.18)" style="animation-delay:0s"/>
+            <circle class="cup-bubble" cx="115" cy="258" r="2.5" fill="rgba(255,255,255,.14)" style="animation-delay:.7s"/>
+            <circle class="cup-bubble" cx="85" cy="256" r="4" fill="rgba(255,255,255,.1)" style="animation-delay:1.4s"/>
+            <circle class="cup-bubble" cx="125" cy="257" r="2" fill="rgba(255,255,255,.12)" style="animation-delay:2s"/>
+            <circle class="cup-bubble" cx="70" cy="259" r="3" fill="rgba(255,255,255,.08)" style="animation-delay:2.5s"/>
           </g>
-          <g id="cup-marks">
-            <line x1="150" y1="70" x2="156" y2="70" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-            <text x="160" y="73" fill="rgba(255,255,255,.2)" font-size="7">75%</text>
-            <line x1="150" y1="130" x2="156" y2="130" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-            <text x="160" y="133" fill="rgba(255,255,255,.2)" font-size="7">50%</text>
-            <line x1="150" y1="190" x2="156" y2="190" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
-            <text x="160" y="193" fill="rgba(255,255,255,.2)" font-size="7">25%</text>
+          <path d="M 36 28 Q 38 100 44 240" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M 154 28 Q 152 100 146 240" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="1" stroke-linecap="round"/>
+          <g id="cup-marks" opacity=".7">
+            <line x1="156" y1="80" x2="162" y2="80" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+            <text x="165" y="83" fill="rgba(255,255,255,.18)" font-size="6.5">75%</text>
+            <line x1="156" y1="140" x2="162" y2="140" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+            <text x="165" y="143" fill="rgba(255,255,255,.18)" font-size="6.5">50%</text>
+            <line x1="156" y1="200" x2="162" y2="200" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+            <text x="165" y="203" fill="rgba(255,255,255,.18)" font-size="6.5">25%</text>
           </g>
+          <g id="splash-group"></g>
         </svg>
       </div>
       <div class="cup-stats">
@@ -282,12 +358,14 @@
           <defs>
             <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stop-color="#38BDF8"/>
-              <stop offset="100%" stop-color="#22D3EE"/>
+              <stop offset="50%" stop-color="#22D3EE"/>
+              <stop offset="100%" stop-color="#4ADE80"/>
             </linearGradient>
           </defs>
           <circle class="ring-bg" cx="50" cy="50" r="42"/>
+          <circle class="ring-glow" id="ring-glow" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89" transform="rotate(-90 50 50)"/>
           <circle class="ring-fg" id="ring-fg" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89" transform="rotate(-90 50 50)"/>
-          <text class="ring-center" id="ring-text" x="50" y="55" text-anchor="middle">0%</text>
+          <text class="ring-center" id="ring-text" x="50" y="56" text-anchor="middle">0%</text>
         </svg>
         <div class="ring-info">
           <div class="label">已饮用</div>
@@ -314,7 +392,7 @@
   <div class="glass record-card">
     <div class="record-header">
       <span class="action-title" style="margin:0">今日记录</span>
-      <span style="font-size:.72rem;color:var(--dim)">共 <span id="record-count" style="font-weight:700;color:var(--water)">0</span> 次</span>
+      <span style="font-size:.7rem;color:var(--dim)">共 <span id="record-count" style="font-weight:700;color:var(--water)">0</span> 次</span>
     </div>
     <div class="record-list" id="record-list">
       <div class="record-empty">还没有打卡记录，点击上方按钮开始喝水吧 💧</div>
@@ -325,12 +403,12 @@
     <div class="week-header">
       <span class="action-title" style="margin:0">本周统计</span>
       <div class="week-summary">
-        <span>📊 总量 <span class="num" id="week-total">0</span>ml</span>
-        <span>✅ 达标 <span class="num" id="week-done">0</span>/7</span>
-        <span>📈 日均 <span class="num" id="week-avg">0</span>ml</span>
+        <span>📊 <span class="num" id="week-total">0</span>ml</span>
+        <span>✅ <span class="num" id="week-done">0</span>/7</span>
+        <span>📈 <span class="num" id="week-avg">0</span>ml/日</span>
       </div>
     </div>
-    <div style="position:relative">
+    <div class="week-chart-wrap" id="week-chart-wrap">
       <div class="week-chart" id="week-chart"></div>
       <div class="week-labels" id="week-labels"></div>
     </div>
@@ -356,6 +434,13 @@
     <div class="custom-title">自定义饮水量</div>
     <div class="custom-val"><span id="custom-val">300</span><span class="unit"> ml</span></div>
     <input type="range" class="custom-slider" id="custom-slider" min="50" max="1000" step="50" value="300" oninput="document.getElementById('custom-val').textContent=this.value">
+    <div class="custom-quick">
+      <button class="custom-quick-btn" onclick="setCustom(100)">100</button>
+      <button class="custom-quick-btn" onclick="setCustom(200)">200</button>
+      <button class="custom-quick-btn" onclick="setCustom(300)">300</button>
+      <button class="custom-quick-btn" onclick="setCustom(500)">500</button>
+      <button class="custom-quick-btn" onclick="setCustom(750)">750</button>
+    </div>
     <div class="custom-actions">
       <button class="custom-btn" onclick="closeCustom()">取消</button>
       <button class="custom-btn primary" onclick="confirmCustom()">确认打卡</button>
@@ -382,24 +467,36 @@ function loadData(){
 }
 function saveData(){localStorage.setItem(STORE_KEY,JSON.stringify(data))}
 
+function getStreak(){
+  let streak=0;
+  const now=new Date();
+  for(let i=0;i<365;i++){
+    const d=new Date(now);d.setDate(now.getDate()-i);
+    if(getDayTotal(dateKey(d))>0)streak++;else break;
+  }
+  return streak;
+}
+
 function addWater(ml){
   const key=todayKey();
   if(!data.records[key])data.records[key]=[];
   const now=new Date();
   data.records[key].push({ml,time:`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,ts:now.getTime()});
   saveData();
+  triggerSplash();
   renderAll();
-  showToast(`💧 +${ml}ml`,getTodayTotal()>=data.goal?'太棒了！今日目标已达成 🎉':'继续加油！');
+  const done=getTodayTotal()>=data.goal;
+  showToast(`💧 +${ml}ml`,done?'太棒了！今日目标已达成 🎉':'继续加油！',done);
 }
 
 function undoLast(){
   const key=todayKey();
   const recs=getDayRecords(key);
-  if(recs.length===0){showToast('⚠️','今天还没有打卡记录');return}
+  if(recs.length===0){showToast('⚠️','今天还没有打卡记录',false);return}
   const removed=recs.pop();
   saveData();
   renderAll();
-  showToast('↩️',`已撤销 ${removed.ml}ml`);
+  showToast('↩️',`已撤销 ${removed.ml}ml`,false);
 }
 
 function setGoal(v){
@@ -410,17 +507,41 @@ function setGoal(v){
   renderAll();
 }
 
+function triggerSplash(){
+  const g=document.getElementById('splash-group');
+  const cx=95,cy=260;
+  const fillH=240*Math.min(1,getTodayTotal()/data.goal);
+  const waterY=260-fillH;
+  for(let i=0;i<5;i++){
+    const drop=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    const angle=-Math.PI/2+(Math.random()-.5)*1.2;
+    const dist=15+Math.random()*10;
+    drop.setAttribute('cx',cx+Math.cos(angle)*dist);
+    drop.setAttribute('cy',waterY);
+    drop.setAttribute('r',2+Math.random()*2);
+    drop.setAttribute('fill','rgba(56,189,248,.5)');
+    drop.classList.add('cup-splash');
+    drop.style.animationDelay=(i*0.04)+'s';
+    g.appendChild(drop);
+    setTimeout(()=>drop.remove(),700);
+  }
+}
+
 function renderCup(){
   const total=getTodayTotal();
   const pct=Math.min(100,Math.round(total/data.goal*100));
-  const cupTop=20,cupBottom=250,cupHeight=cupBottom-cupTop;
+  const cupTop=22,cupBottom=260,cupHeight=cupBottom-cupTop;
   const fillH=cupHeight*Math.min(1,total/data.goal);
   const waterY=cupBottom-fillH;
   const wf=document.getElementById('water-fill');
   wf.setAttribute('y',waterY);
   wf.setAttribute('height',fillH);
+  const ws=document.getElementById('water-surface');
+  ws.setAttribute('cy',waterY);
+  ws.setAttribute('opacity',total>0?.6:0);
   document.getElementById('wave1').setAttribute('transform',`translate(0,${waterY})`);
-  document.getElementById('wave2').setAttribute('transform',`translate(0,${waterY+3})`);
+  document.getElementById('wave2').setAttribute('transform',`translate(0,${waterY+2})`);
+  document.getElementById('wave3').setAttribute('transform',`translate(0,${waterY-1})`);
   document.getElementById('cup-current').textContent=total;
   document.getElementById('cup-goal').textContent=data.goal;
   const pe=document.getElementById('cup-percent');
@@ -434,11 +555,14 @@ function renderRing(){
   const circumference=263.89;
   const offset=circumference*(1-pct);
   document.getElementById('ring-fg').setAttribute('stroke-dashoffset',offset);
+  document.getElementById('ring-glow').setAttribute('stroke-dashoffset',offset);
   document.getElementById('ring-text').textContent=Math.round(pct*100)+'%';
   document.getElementById('info-current').textContent=total;
   document.getElementById('info-goal').textContent=data.goal;
   const rem=Math.max(0,data.goal-total);
-  document.getElementById('info-remaining').textContent=rem>0?`${rem} ml`:'已达标 🎉';
+  const remEl=document.getElementById('info-remaining');
+  if(rem>0){remEl.textContent=`${rem} ml`;remEl.classList.remove('done')}
+  else{remEl.textContent='已达标 🎉';remEl.classList.add('done')}
 }
 
 function renderRecord(){
@@ -466,9 +590,10 @@ function renderWeek(){
   }
   const totals=days.map(d=>getDayTotal(d.key));
   const maxVal=Math.max(...totals,data.goal,1);
-  const chartH=120;
+  const chartH=110;
   const chart=document.getElementById('week-chart');
   const labels=document.getElementById('week-labels');
+  const wrap=document.getElementById('week-chart-wrap');
   let ch='',lh='';
   const weekTotal=totals.reduce((s,v)=>s+v,0);
   const weekDone=totals.filter(v=>v>=data.goal).length;
@@ -476,17 +601,31 @@ function renderWeek(){
   document.getElementById('week-total').textContent=weekTotal;
   document.getElementById('week-done').textContent=weekDone;
   document.getElementById('week-avg').textContent=weekAvg;
+  const goalLineH=chartH*(data.goal/maxVal);
+  let goalLine=wrap.querySelector('.week-goal-line');
+  if(!goalLine){
+    goalLine=document.createElement('div');
+    goalLine.className='week-goal-line';
+    const lbl=document.createElement('span');
+    lbl.className='week-goal-label';
+    goalLine.appendChild(lbl);
+    wrap.insertBefore(goalLine,wrap.firstChild);
+  }
+  const totalChartH=chartH+20;
+  goalLine.style.bottom=(goalLineH+18)+'px';
+  goalLine.querySelector('.week-goal-label').textContent=`目标 ${data.goal}ml`;
   days.forEach((d,i)=>{
     const v=totals[i];
-    const barH=Math.max(4,chartH*(v/maxVal));
+    const barH=Math.max(3,chartH*(v/maxVal));
     const reached=v>=data.goal;
     const today=d.isToday;
     let color;
-    if(reached){color='linear-gradient(180deg,#4ADE80,#22D3EE)'}
-    else if(today){color='linear-gradient(180deg,#38BDF8,#0EA5E9)'}
-    else{color='linear-gradient(180deg,rgba(56,189,248,.3),rgba(14,165,233,.2))'}
+    if(reached){color='linear-gradient(180deg,#4ADE80 0%,#22D3EE 100%)'}
+    else if(today){color='linear-gradient(180deg,#38BDF8 0%,#0EA5E9 100%)'}
+    else{color='linear-gradient(180deg,rgba(56,189,248,.28) 0%,rgba(14,165,233,.15) 100%)'}
+    const dateNum=d.date.getDate();
     ch+=`<div class="week-bar-wrap"><div class="week-bar${today?' today':''}" style="height:${barH}px;background:${color}" onclick="showDayInfo('${d.key}')"><span class="tip">${d.label} · ${v}ml${reached?' ✅':''}</span></div></div>`;
-    lh+=`<div class="week-label${today?' today':''}">${d.label}</div>`;
+    lh+=`<div class="week-label${today?' today':''}">${d.label}<span class="date-num">${dateNum}</span></div>`;
   });
   chart.innerHTML=ch;
   labels.innerHTML=lh;
@@ -497,8 +636,8 @@ function showDayInfo(key){
   const total=getDayTotal(key);
   const d=new Date(key);
   const dayName=WEEKDAYS[d.getDay()];
-  if(total===0){showToast(`📅 周${dayName}`,'当天无打卡记录');return}
-  showToast(`📅 周${dayName}`,`共 ${recs.length} 次 · ${total}ml${total>=data.goal?' ✅ 达标':''}`);
+  if(total===0){showToast(`📅 周${dayName}`,'当天无打卡记录',false);return}
+  showToast(`📅 周${dayName}`,`共 ${recs.length} 次 · ${total}ml${total>=data.goal?' ✅ 达标':''}`,total>=data.goal);
 }
 
 function renderDate(){
@@ -508,19 +647,26 @@ function renderDate(){
   document.getElementById('today-date').textContent=`${y}年${m}月${dd}日 · 星期${wd}`;
 }
 
-function renderAll(){renderCup();renderRing();renderRecord();renderWeek()}
+function renderStreak(){
+  const s=getStreak();
+  document.getElementById('streak-badge').textContent=`🔥 连续打卡 ${s} 天`;
+}
+
+function renderAll(){renderCup();renderRing();renderRecord();renderWeek();renderStreak()}
 
 let toastTimer;
-function showToast(icon,msg){
+function showToast(icon,msg,done){
   const t=document.getElementById('toast');
-  t.innerHTML=`<span class="icon">${icon}</span>${msg}`;
+  t.innerHTML=`<span>${icon}</span><span>${msg}</span>`;
+  t.classList.toggle('done',!!done);
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
 }
 
 function openCustom(){document.getElementById('custom-modal').classList.add('show')}
 function closeCustom(){document.getElementById('custom-modal').classList.remove('show')}
+function setCustom(v){document.getElementById('custom-slider').value=v;document.getElementById('custom-val').textContent=v}
 function confirmCustom(){
   const ml=parseInt(document.getElementById('custom-slider').value);
   closeCustom();
@@ -529,23 +675,47 @@ function confirmCustom(){
 
 function initBubbles(){
   const c=document.getElementById('bubbles');
-  for(let i=0;i<15;i++){
+  for(let i=0;i<18;i++){
     const b=document.createElement('div');
     b.className='bubble';
-    const size=8+Math.random()*24;
+    const size=6+Math.random()*22;
     b.style.width=b.style.height=size+'px';
     b.style.left=Math.random()*100+'%';
-    b.style.animationDuration=(8+Math.random()*8)+'s';
-    b.style.animationDelay=Math.random()*8+'s';
+    b.style.animationDuration=(10+Math.random()*10)+'s';
+    b.style.animationDelay=Math.random()*10+'s';
     c.appendChild(b);
   }
 }
+
+function initCaustics(){
+  const c=document.getElementById('caustics');
+  const colors=['rgba(56,189,248,.12)','rgba(34,211,238,.1)','rgba(8,145,178,.08)'];
+  for(let i=0;i<4;i++){
+    const d=document.createElement('div');
+    d.className='caustic';
+    d.style.background=colors[i%3];
+    d.style.left=(10+Math.random()*70)+'%';
+    d.style.top=(Math.random()*80)+'%';
+    d.style.animationDuration=(12+Math.random()*8)+'s';
+    d.style.animationDelay=(Math.random()*5)+'s';
+    c.appendChild(d);
+  }
+}
+
+document.querySelectorAll('.btn-water').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{
+    const r=btn.getBoundingClientRect();
+    btn.style.setProperty('--rx',((e.clientX-r.left)/r.width*100)+'%');
+    btn.style.setProperty('--ry',((e.clientY-r.top)/r.height*100)+'%');
+  });
+});
 
 loadData();
 document.getElementById('goal-input').value=data.goal;
 renderDate();
 renderAll();
 initBubbles();
+initCaustics();
 </script>
 </body>
 </html>
