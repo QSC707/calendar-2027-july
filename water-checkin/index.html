@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>喝水打卡 · Water Check-in</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#041821; --bg2:#062a3a;
+    --card:rgba(255,255,255,0.04); --card2:rgba(255,255,255,0.07);
+    --border:rgba(255,255,255,0.08);
+    --text:#E0F4F8; --dim:#6A9BA8; --dim2:#3A6B78;
+    --water:#38BDF8; --water2:#0EA5E9; --water3:#06B6D4; --aqua:#22D3EE;
+    --mint:#4ADE80; --warn:#FBBF24; --danger:#F87171;
+  }
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Segoe UI','SF Pro Display',system-ui,sans-serif;
+    min-height:100vh; overflow-x:hidden; letter-spacing:-0.01em;
+  }
+  body::before{
+    content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse at 30% 0%,rgba(56,189,248,.10),transparent 50%),
+      radial-gradient(ellipse at 70% 30%,rgba(34,211,238,.06),transparent 45%),
+      radial-gradient(ellipse at 50% 100%,rgba(14,165,233,.05),transparent 50%);
+  }
+
+  .bubbles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .bubble{
+    position:absolute;bottom:-20px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.25),rgba(56,189,248,.08));
+    border:1px solid rgba(255,255,255,.06);
+    animation:bubbleRise linear infinite;
+  }
+  @keyframes bubbleRise{
+    0%{transform:translateY(0) translateX(0);opacity:0}
+    10%{opacity:.6}
+    50%{transform:translateY(-50vh) translateX(15px)}
+    90%{opacity:.4}
+    100%{transform:translateY(-110vh) translateX(-10px);opacity:0}
+  }
+
+  .app{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:24px 20px}
+
+  .header{text-align:center;margin-bottom:20px}
+  .header h1{
+    font-size:1.9rem;font-weight:800;letter-spacing:-0.04em;
+    background:linear-gradient(135deg,var(--water),var(--aqua),var(--mint));
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    background-size:200% 200%;animation:gradShift 6s ease infinite;
+  }
+  @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .header .date{font-size:.78rem;color:var(--dim);margin-top:4px;letter-spacing:.03em}
+
+  .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+  @media(max-width:640px){.main-grid{grid-template-columns:1fr}}
+
+  .glass{
+    background:linear-gradient(135deg,var(--card2),var(--card));
+    border:1px solid var(--border); border-radius:20px;
+    backdrop-filter:blur(20px) saturate(1.2); -webkit-backdrop-filter:blur(20px) saturate(1.2);
+    box-shadow:0 8px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05);
+  }
+
+  .cup-card{padding:24px 20px;text-align:center;position:relative;overflow:hidden}
+  .cup-card::after{
+    content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+    background:linear-gradient(105deg,transparent,rgba(255,255,255,.03),transparent);
+    animation:shimmer 6s infinite;
+  }
+  @keyframes shimmer{0%{left:-100%}100%{left:200%}}
+
+  .cup-wrap{position:relative;width:180px;height:260px;margin:0 auto}
+  .cup-svg{width:100%;height:100%}
+  .cup-water-fill{transition:all .8s cubic-bezier(.4,0,.2,1)}
+  .cup-wave1{animation:waveMove 3s linear infinite}
+  .cup-wave2{animation:waveMove 4s linear infinite reverse}
+  @keyframes waveMove{0%{transform:translateX(0)}100%{transform:translateX(-40px)}}
+  .cup-bubble{animation:cupBubble 2.5s ease-in infinite}
+  @keyframes cupBubble{
+    0%{transform:translateY(0);opacity:0}
+    20%{opacity:.5}
+    100%{transform:translateY(-60px);opacity:0}
+  }
+
+  .cup-stats{margin-top:10px}
+  .cup-amount{font-size:2.2rem;font-weight:900;letter-spacing:-0.03em;color:var(--water)}
+  .cup-amount .unit{font-size:.9rem;font-weight:500;color:var(--dim);margin-left:4px}
+  .cup-goal-text{font-size:.72rem;color:var(--dim);margin-top:2px}
+  .cup-percent{
+    display:inline-block;margin-top:6px;padding:3px 14px;border-radius:20px;
+    font-size:.7rem;font-weight:700;letter-spacing:.05em;
+    background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.2);color:var(--water);
+    transition:all .3s;
+  }
+  .cup-percent.done{background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.25);color:var(--mint)}
+
+  .progress-card{padding:20px;display:flex;flex-direction:column;justify-content:center}
+  .progress-title{font-size:.72rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+  .ring-wrap{display:flex;align-items:center;gap:16px}
+  .ring-svg{width:100px;height:100px;flex-shrink:0}
+  .ring-bg{fill:none;stroke:rgba(255,255,255,.06);stroke-width:8}
+  .ring-fg{fill:none;stroke:url(#ringGrad);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
+  .ring-center{font-size:1.3rem;font-weight:900;fill:var(--water)}
+  .ring-info{flex:1}
+  .ring-info .label{font-size:.68rem;color:var(--dim);margin-bottom:2px}
+  .ring-info .val{font-size:1.1rem;font-weight:800;margin-bottom:8px}
+  .ring-info .val .small{font-size:.75rem;color:var(--dim);font-weight:500}
+  .ring-info .remaining{font-size:.72rem;color:var(--aqua);padding:4px 10px;background:rgba(34,211,238,.08);border-radius:8px;display:inline-block}
+
+  .action-card{padding:20px;margin-bottom:16px}
+  .action-title{font-size:.72rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+  .action-row{display:flex;gap:10px;flex-wrap:wrap}
+  .btn-water{
+    flex:1;min-width:70px;padding:12px 8px;border-radius:14px;border:1px solid var(--border);
+    background:var(--card);color:var(--text);font-size:.85rem;font-weight:700;cursor:pointer;
+    transition:all .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;align-items:center;gap:3px;
+  }
+  .btn-water .icon{font-size:1.3rem}
+  .btn-water .ml{font-size:.62rem;color:var(--dim);font-weight:500}
+  .btn-water:hover{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.3);transform:translateY(-2px);box-shadow:0 6px 20px rgba(56,189,248,.15)}
+  .btn-water:active{transform:translateY(0) scale(.97)}
+  .btn-water.custom{background:rgba(34,211,238,.06);border-color:rgba(34,211,238,.15)}
+  .btn-water.undo{background:rgba(248,113,113,.04);border-color:rgba(248,113,113,.1)}
+  .btn-water.undo:hover{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.25);box-shadow:0 6px 20px rgba(248,113,113,.1)}
+
+  .record-card{padding:20px;margin-bottom:16px}
+  .record-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .record-list{max-height:180px;overflow-y:auto}
+  .record-list::-webkit-scrollbar{width:4px}
+  .record-list::-webkit-scrollbar-thumb{background:rgba(56,189,248,.2);border-radius:2px}
+  .record-item{
+    display:flex;align-items:center;gap:10px;padding:8px 0;
+    border-bottom:1px solid rgba(255,255,255,.03);
+    animation:slideIn .3s ease;
+  }
+  @keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+  .record-item:last-child{border-bottom:none}
+  .record-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor}
+  .record-time{font-size:.75rem;color:var(--dim);font-variant-numeric:tabular-nums}
+  .record-ml{font-size:.85rem;font-weight:700;margin-left:auto}
+  .record-empty{text-align:center;padding:20px 0;color:var(--dim2);font-size:.8rem}
+
+  .week-card{padding:20px;margin-bottom:16px}
+  .week-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .week-summary{display:flex;gap:16px;font-size:.72rem;color:var(--dim)}
+  .week-summary span{display:flex;align-items:center;gap:4px}
+  .week-summary .num{font-weight:800;color:var(--text);font-size:.9rem}
+  .week-chart{display:flex;justify-content:space-between;align-items:flex-end;gap:6px;height:140px;margin-bottom:8px}
+  .week-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+  .week-bar{
+    width:100%;max-width:36px;border-radius:8px 8px 4px 4px;min-height:4px;
+    transition:all .5s cubic-bezier(.4,0,.2,1);position:relative;cursor:pointer;
+  }
+  .week-bar.today{box-shadow:0 0 12px rgba(56,189,248,.3)}
+  .week-bar:hover{filter:brightness(1.2)}
+  .week-bar .tip{
+    position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+    background:rgba(0,0,0,.8);padding:4px 8px;border-radius:6px;font-size:.65rem;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;
+  }
+  .week-bar:hover .tip{opacity:1}
+  .week-labels{display:flex;justify-content:space-between;gap:6px}
+  .week-label{flex:1;text-align:center;font-size:.65rem;color:var(--dim)}
+  .week-label.today{color:var(--water);font-weight:700}
+  .week-avg-line{
+    position:absolute;left:0;right:0;border-top:1px dashed rgba(251,191,36,.3);
+    pointer-events:none;
+  }
+  .week-avg-label{position:absolute;right:0;top:-16px;font-size:.6rem;color:var(--warn);background:var(--bg);padding:0 4px}
+
+  .settings-card{padding:16px 20px}
+  .settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .settings-label{font-size:.8rem;color:var(--dim);display:flex;align-items:center;gap:6px}
+  .settings-control{display:flex;align-items:center;gap:8px}
+  .settings-input{
+    width:70px;padding:6px 10px;border-radius:10px;border:1px solid var(--border);
+    background:var(--card);color:var(--text);font-size:.85rem;font-weight:700;text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .settings-input:focus{outline:none;border-color:rgba(56,189,248,.4)}
+  .settings-unit{font-size:.72rem;color:var(--dim)}
+
+  .footer{text-align:center;font-size:.65rem;color:var(--dim2);padding:8px 0}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+    background:linear-gradient(135deg,rgba(56,189,248,.15),rgba(34,211,238,.1));
+    border:1px solid rgba(56,189,248,.25);border-radius:16px;padding:12px 24px;
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    font-size:.85rem;font-weight:600;z-index:300;opacity:0;
+    transition:all .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 32px rgba(0,0,0,.3);
+  }
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .toast .icon{margin-right:6px}
+
+  .custom-modal{
+    position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);
+    z-index:250;opacity:0;pointer-events:none;transition:opacity .3s;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .custom-modal.show{opacity:1;pointer-events:auto}
+  .custom-panel{
+    background:linear-gradient(135deg,rgba(10,30,40,.95),rgba(4,24,33,.98));
+    border:1px solid var(--border);border-radius:20px;padding:24px;width:90%;max-width:320px;
+    box-shadow:0 16px 48px rgba(0,0,0,.4);transform:scale(.9);transition:transform .3s;
+  }
+  .custom-modal.show .custom-panel{transform:scale(1)}
+  .custom-title{font-size:1rem;font-weight:800;margin-bottom:16px;text-align:center}
+  .custom-slider{width:100%;margin:8px 0;-webkit-appearance:none;height:6px;border-radius:3px;background:rgba(56,189,248,.15);outline:none}
+  .custom-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--water);cursor:pointer;box-shadow:0 0 12px rgba(56,189,248,.5)}
+  .custom-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--water);cursor:pointer;border:none}
+  .custom-val{text-align:center;font-size:1.8rem;font-weight:900;color:var(--water);margin:8px 0}
+  .custom-val .unit{font-size:.9rem;color:var(--dim);font-weight:500}
+  .custom-actions{display:flex;gap:10px;margin-top:16px}
+  .custom-btn{flex:1;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s}
+  .custom-btn:hover{background:rgba(56,189,248,.1)}
+  .custom-btn.primary{background:rgba(56,189,248,.15);border-color:rgba(56,189,248,.3);color:var(--water)}
+  .custom-btn.primary:hover{background:rgba(56,189,248,.25)}
+</style>
+</head>
+<body>
+<div class="bubbles" id="bubbles"></div>
+<div class="app">
+  <div class="header">
+    <h1>💧 喝水打卡</h1>
+    <div class="date" id="today-date">—</div>
+  </div>
+
+  <div class="main-grid">
+    <div class="glass cup-card">
+      <div class="cup-wrap">
+        <svg class="cup-svg" viewBox="0 0 180 260" id="cup-svg">
+          <defs>
+            <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#38BDF8" stop-opacity=".7"/>
+              <stop offset="50%" stop-color="#0EA5E9" stop-opacity=".85"/>
+              <stop offset="100%" stop-color="#06B6D4" stop-opacity=".95"/>
+            </linearGradient>
+            <linearGradient id="cupGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="rgba(255,255,255,.12)"/>
+              <stop offset="50%" stop-color="rgba(255,255,255,.04)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,.12)"/>
+            </linearGradient>
+            <clipPath id="cupClip">
+              <path d="M 30 20 L 40 240 Q 40 250 50 250 L 130 250 Q 140 250 140 240 L 150 20 Z"/>
+            </clipPath>
+          </defs>
+          <path d="M 30 20 L 40 240 Q 40 250 50 250 L 130 250 Q 140 250 140 240 L 150 20 Z" fill="none" stroke="url(#cupGrad)" stroke-width="2"/>
+          <path d="M 28 20 L 152 20" stroke="rgba(255,255,255,.15)" stroke-width="3" stroke-linecap="round"/>
+          <g clip-path="url(#cupClip)">
+            <rect class="cup-water-fill" id="water-fill" x="0" y="250" width="180" height="0" fill="url(#waterGrad)"/>
+            <path class="cup-wave1" id="wave1" d="M -40 0 Q -20 -6 0 0 T 40 0 T 80 0 T 120 0 T 160 0 T 200 0 T 240 0 L 240 20 L -40 20 Z" fill="rgba(56,189,248,.3)" opacity=".5"/>
+            <path class="cup-wave2" id="wave2" d="M -40 0 Q -20 5 0 0 T 40 0 T 80 0 T 120 0 T 160 0 T 200 0 T 240 0 L 240 20 L -40 20 Z" fill="rgba(34,211,238,.2)" opacity=".4"/>
+            <circle class="cup-bubble" cx="60" cy="240" r="4" fill="rgba(255,255,255,.15)" style="animation-delay:0s"/>
+            <circle class="cup-bubble" cx="100" cy="245" r="3" fill="rgba(255,255,255,.12)" style="animation-delay:.8s"/>
+            <circle class="cup-bubble" cx="80" cy="248" r="5" fill="rgba(255,255,255,.1)" style="animation-delay:1.5s"/>
+          </g>
+          <g id="cup-marks">
+            <line x1="150" y1="70" x2="156" y2="70" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+            <text x="160" y="73" fill="rgba(255,255,255,.2)" font-size="7">75%</text>
+            <line x1="150" y1="130" x2="156" y2="130" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+            <text x="160" y="133" fill="rgba(255,255,255,.2)" font-size="7">50%</text>
+            <line x1="150" y1="190" x2="156" y2="190" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+            <text x="160" y="193" fill="rgba(255,255,255,.2)" font-size="7">25%</text>
+          </g>
+        </svg>
+      </div>
+      <div class="cup-stats">
+        <div class="cup-amount"><span id="cup-current">0</span><span class="unit">ml</span></div>
+        <div class="cup-goal-text">目标 <span id="cup-goal">2000</span> ml</div>
+        <div class="cup-percent" id="cup-percent">0%</div>
+      </div>
+    </div>
+
+    <div class="glass progress-card">
+      <div class="progress-title">今日进度</div>
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#38BDF8"/>
+              <stop offset="100%" stop-color="#22D3EE"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-bg" cx="50" cy="50" r="42"/>
+          <circle class="ring-fg" id="ring-fg" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89" transform="rotate(-90 50 50)"/>
+          <text class="ring-center" id="ring-text" x="50" y="55" text-anchor="middle">0%</text>
+        </svg>
+        <div class="ring-info">
+          <div class="label">已饮用</div>
+          <div class="val"><span id="info-current">0</span> <span class="small">/ <span id="info-goal">2000</span> ml</span></div>
+          <div class="label">还需</div>
+          <div class="remaining" id="info-remaining">2000 ml</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass action-card">
+    <div class="action-title">快速打卡</div>
+    <div class="action-row">
+      <button class="btn-water" onclick="addWater(200)"><span class="icon">🥛</span>小杯<span class="ml">200ml</span></button>
+      <button class="btn-water" onclick="addWater(250)"><span class="icon">☕</span>标准<span class="ml">250ml</span></button>
+      <button class="btn-water" onclick="addWater(350)"><span class="icon">🥤</span>大杯<span class="ml">350ml</span></button>
+      <button class="btn-water" onclick="addWater(500)"><span class="icon">🍶</span>水瓶<span class="ml">500ml</span></button>
+      <button class="btn-water custom" onclick="openCustom()"><span class="icon">➕</span>自定义<span class="ml">...</span></button>
+      <button class="btn-water undo" onclick="undoLast()"><span class="icon">↩️</span>撤销<span class="ml">最后一次</span></button>
+    </div>
+  </div>
+
+  <div class="glass record-card">
+    <div class="record-header">
+      <span class="action-title" style="margin:0">今日记录</span>
+      <span style="font-size:.72rem;color:var(--dim)">共 <span id="record-count" style="font-weight:700;color:var(--water)">0</span> 次</span>
+    </div>
+    <div class="record-list" id="record-list">
+      <div class="record-empty">还没有打卡记录，点击上方按钮开始喝水吧 💧</div>
+    </div>
+  </div>
+
+  <div class="glass week-card">
+    <div class="week-header">
+      <span class="action-title" style="margin:0">本周统计</span>
+      <div class="week-summary">
+        <span>📊 总量 <span class="num" id="week-total">0</span>ml</span>
+        <span>✅ 达标 <span class="num" id="week-done">0</span>/7</span>
+        <span>📈 日均 <span class="num" id="week-avg">0</span>ml</span>
+      </div>
+    </div>
+    <div style="position:relative">
+      <div class="week-chart" id="week-chart"></div>
+      <div class="week-labels" id="week-labels"></div>
+    </div>
+  </div>
+
+  <div class="glass settings-card">
+    <div class="settings-row">
+      <span class="settings-label">🎯 每日目标</span>
+      <div class="settings-control">
+        <input type="number" class="settings-input" id="goal-input" value="2000" min="500" max="5000" step="100" onchange="setGoal(this.value)">
+        <span class="settings-unit">ml</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">💧 喝水打卡 · 保持水分 · 健康生活 · 数据本地保存</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="custom-modal" id="custom-modal" onclick="if(event.target===this)closeCustom()">
+  <div class="custom-panel">
+    <div class="custom-title">自定义饮水量</div>
+    <div class="custom-val"><span id="custom-val">300</span><span class="unit"> ml</span></div>
+    <input type="range" class="custom-slider" id="custom-slider" min="50" max="1000" step="50" value="300" oninput="document.getElementById('custom-val').textContent=this.value">
+    <div class="custom-actions">
+      <button class="custom-btn" onclick="closeCustom()">取消</button>
+      <button class="custom-btn primary" onclick="confirmCustom()">确认打卡</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORE_KEY='water-checkin-data';
+const WEEKDAYS=['日','一','二','三','四','五','六'];
+
+let data={goal:2000,records:{}};
+
+function todayKey(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function getDayRecords(key){return data.records[key]||[]}
+function getDayTotal(key){return getDayRecords(key).reduce((s,r)=>s+r.ml,0)}
+function getTodayTotal(){return getDayTotal(todayKey())}
+
+function loadData(){
+  try{const s=localStorage.getItem(STORE_KEY);if(s)data=JSON.parse(s)}catch(e){}
+  if(!data.records)data.records={};
+  if(!data.goal)data.goal=2000;
+}
+function saveData(){localStorage.setItem(STORE_KEY,JSON.stringify(data))}
+
+function addWater(ml){
+  const key=todayKey();
+  if(!data.records[key])data.records[key]=[];
+  const now=new Date();
+  data.records[key].push({ml,time:`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,ts:now.getTime()});
+  saveData();
+  renderAll();
+  showToast(`💧 +${ml}ml`,getTodayTotal()>=data.goal?'太棒了！今日目标已达成 🎉':'继续加油！');
+}
+
+function undoLast(){
+  const key=todayKey();
+  const recs=getDayRecords(key);
+  if(recs.length===0){showToast('⚠️','今天还没有打卡记录');return}
+  const removed=recs.pop();
+  saveData();
+  renderAll();
+  showToast('↩️',`已撤销 ${removed.ml}ml`);
+}
+
+function setGoal(v){
+  v=parseInt(v)||2000;
+  v=Math.max(500,Math.min(5000,v));
+  data.goal=v;
+  saveData();
+  renderAll();
+}
+
+function renderCup(){
+  const total=getTodayTotal();
+  const pct=Math.min(100,Math.round(total/data.goal*100));
+  const cupTop=20,cupBottom=250,cupHeight=cupBottom-cupTop;
+  const fillH=cupHeight*Math.min(1,total/data.goal);
+  const waterY=cupBottom-fillH;
+  const wf=document.getElementById('water-fill');
+  wf.setAttribute('y',waterY);
+  wf.setAttribute('height',fillH);
+  document.getElementById('wave1').setAttribute('transform',`translate(0,${waterY})`);
+  document.getElementById('wave2').setAttribute('transform',`translate(0,${waterY+3})`);
+  document.getElementById('cup-current').textContent=total;
+  document.getElementById('cup-goal').textContent=data.goal;
+  const pe=document.getElementById('cup-percent');
+  pe.textContent=pct+'%';
+  pe.classList.toggle('done',pct>=100);
+}
+
+function renderRing(){
+  const total=getTodayTotal();
+  const pct=Math.min(1,total/data.goal);
+  const circumference=263.89;
+  const offset=circumference*(1-pct);
+  document.getElementById('ring-fg').setAttribute('stroke-dashoffset',offset);
+  document.getElementById('ring-text').textContent=Math.round(pct*100)+'%';
+  document.getElementById('info-current').textContent=total;
+  document.getElementById('info-goal').textContent=data.goal;
+  const rem=Math.max(0,data.goal-total);
+  document.getElementById('info-remaining').textContent=rem>0?`${rem} ml`:'已达标 🎉';
+}
+
+function renderRecord(){
+  const recs=getDayRecords(todayKey());
+  const list=document.getElementById('record-list');
+  document.getElementById('record-count').textContent=recs.length;
+  if(recs.length===0){list.innerHTML='<div class="record-empty">还没有打卡记录，点击上方按钮开始喝水吧 💧</div>';return}
+  let html='';
+  [...recs].reverse().forEach((r,i)=>{
+    const color=i===0?'var(--water)':'var(--aqua)';
+    html+=`<div class="record-item"><span class="record-dot" style="background:${color};color:${color}"></span><span class="record-time">${r.time}</span><span class="record-ml" style="color:${color}">+${r.ml}ml</span></div>`;
+  });
+  list.innerHTML=html;
+}
+
+function renderWeek(){
+  const now=new Date();
+  const dayOfWeek=now.getDay();
+  const mondayOffset=dayOfWeek===0?-6:1-dayOfWeek;
+  const monday=new Date(now);monday.setDate(now.getDate()+mondayOffset);
+  const days=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(monday);d.setDate(monday.getDate()+i);
+    days.push({key:dateKey(d),date:d,isToday:dateKey(d)===todayKey(),label:WEEKDAYS[d.getDay()]});
+  }
+  const totals=days.map(d=>getDayTotal(d.key));
+  const maxVal=Math.max(...totals,data.goal,1);
+  const chartH=120;
+  const chart=document.getElementById('week-chart');
+  const labels=document.getElementById('week-labels');
+  let ch='',lh='';
+  const weekTotal=totals.reduce((s,v)=>s+v,0);
+  const weekDone=totals.filter(v=>v>=data.goal).length;
+  const weekAvg=Math.round(weekTotal/7);
+  document.getElementById('week-total').textContent=weekTotal;
+  document.getElementById('week-done').textContent=weekDone;
+  document.getElementById('week-avg').textContent=weekAvg;
+  days.forEach((d,i)=>{
+    const v=totals[i];
+    const barH=Math.max(4,chartH*(v/maxVal));
+    const reached=v>=data.goal;
+    const today=d.isToday;
+    let color;
+    if(reached){color='linear-gradient(180deg,#4ADE80,#22D3EE)'}
+    else if(today){color='linear-gradient(180deg,#38BDF8,#0EA5E9)'}
+    else{color='linear-gradient(180deg,rgba(56,189,248,.3),rgba(14,165,233,.2))'}
+    ch+=`<div class="week-bar-wrap"><div class="week-bar${today?' today':''}" style="height:${barH}px;background:${color}" onclick="showDayInfo('${d.key}')"><span class="tip">${d.label} · ${v}ml${reached?' ✅':''}</span></div></div>`;
+    lh+=`<div class="week-label${today?' today':''}">${d.label}</div>`;
+  });
+  chart.innerHTML=ch;
+  labels.innerHTML=lh;
+}
+
+function showDayInfo(key){
+  const recs=getDayRecords(key);
+  const total=getDayTotal(key);
+  const d=new Date(key);
+  const dayName=WEEKDAYS[d.getDay()];
+  if(total===0){showToast(`📅 周${dayName}`,'当天无打卡记录');return}
+  showToast(`📅 周${dayName}`,`共 ${recs.length} 次 · ${total}ml${total>=data.goal?' ✅ 达标':''}`);
+}
+
+function renderDate(){
+  const now=new Date();
+  const m=now.getMonth()+1,dd=now.getDate(),y=now.getFullYear();
+  const wd=WEEKDAYS[now.getDay()];
+  document.getElementById('today-date').textContent=`${y}年${m}月${dd}日 · 星期${wd}`;
+}
+
+function renderAll(){renderCup();renderRing();renderRecord();renderWeek()}
+
+let toastTimer;
+function showToast(icon,msg){
+  const t=document.getElementById('toast');
+  t.innerHTML=`<span class="icon">${icon}</span>${msg}`;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function openCustom(){document.getElementById('custom-modal').classList.add('show')}
+function closeCustom(){document.getElementById('custom-modal').classList.remove('show')}
+function confirmCustom(){
+  const ml=parseInt(document.getElementById('custom-slider').value);
+  closeCustom();
+  addWater(ml);
+}
+
+function initBubbles(){
+  const c=document.getElementById('bubbles');
+  for(let i=0;i<15;i++){
+    const b=document.createElement('div');
+    b.className='bubble';
+    const size=8+Math.random()*24;
+    b.style.width=b.style.height=size+'px';
+    b.style.left=Math.random()*100+'%';
+    b.style.animationDuration=(8+Math.random()*8)+'s';
+    b.style.animationDelay=Math.random()*8+'s';
+    c.appendChild(b);
+  }
+}
+
+loadData();
+document.getElementById('goal-input').value=data.goal;
+renderDate();
+renderAll();
+initBubbles();
+</script>
+</body>
+</html>
