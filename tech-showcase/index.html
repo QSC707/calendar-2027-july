@@ -151,8 +151,8 @@
   .item-price .unit{font-size:.66rem;font-weight:500;color:var(--dim);margin-left:1px}
   .item-date{font-size:.66rem;color:var(--dim2);font-variant-numeric:tabular-nums}
   .item-status{
-    position:absolute;top:14px;right:14px;padding:3px 9px;border-radius:10px;
-    font-size:.58rem;font-weight:700;letter-spacing:.04em;z-index:2;
+    padding:3px 9px;border-radius:10px;
+    font-size:.58rem;font-weight:700;letter-spacing:.04em;white-space:nowrap;
   }
   .item-status.active{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.15);color:var(--mint)}
   .item-status.idle{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.12);color:var(--warn)}
@@ -487,13 +487,12 @@ function renderGrid(){
     const dateStr=item.date?item.date.replace(/-/g,'/').slice(2):'—';
     const delay=Math.min(idx*0.04,0.4);
     html+=`<div class="item-card" style="--cat-color:${c.color};--cat-bg:${c.color}15;--cat-border:${c.color}30;--cat-glow:${c.color};animation-delay:${delay}s" onclick="openDetail('${item.id}')">
-      <div class="item-status ${st.cls}">${st.icon} ${st.label}</div>
       <div class="item-top">
         <div class="item-icon-wrap">${c.icon}</div>
-        <div class="item-cat-badge">${c.label}</div>
+        <div class="item-status ${st.cls}">${st.icon} ${st.label}</div>
       </div>
       <div class="item-name">${esc(item.name)}</div>
-      <div class="item-brand">${esc(item.brand||'')} ${item.model?'· '+esc(item.model):''}</div>
+      <div class="item-brand"><span class="item-cat-badge">${c.label}</span> ${esc(item.brand||'')} ${item.model?'· '+esc(item.model):''}</div>
       <div class="item-info">
         <div class="item-price">¥${fmtPrice(item.price||0)}</div>
         <div class="item-date">${dateStr}</div>
