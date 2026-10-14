@@ -1,0 +1,10 @@
+{
+  "workName": "电子产品展示柜·Tech Showcase",
+  "introduction": "个人电子设备收藏管理工具，卡片展示柜+6大分类+购买信息+统计面板+搜索筛选，数据本地持久化",
+  "gitUrl": "https://github.com/QSC707/calendar-2027-july.git",
+  "gitBranch": "master",
+  "campId": "e4c24564-04f0-42f0-8980-695fee23dcc3",
+  "htmlFile": "index.html",
+  "domainId": "057cc3d0d68010e60fb3c0075a0af360",
+  "region": "cn-north-4"
+}

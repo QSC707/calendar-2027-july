@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电子产品展示柜 · Tech Showcase</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#08080d; --bg2:#0e0e16;
+    --card:rgba(255,255,255,0.035); --card2:rgba(255,255,255,0.06);
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --text:#ECECF4; --dim:#6E6E82; --dim2:#3E3E52;
+    --accent:#818CF8; --accent2:#6366F1; --cyan:#22D3EE; --violet:#A78BFA;
+    --mint:#4ADE80; --warn:#FBBF24; --danger:#F87171; --pink:#F472B6;
+    --phone:#818CF8; --laptop:#22D3EE; --audio:#A78BFA; --camera:#FBBF24; --wear:#4ADE80; --other:#F472B6;
+  }
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Segoe UI','SF Pro Display',system-ui,sans-serif;
+    min-height:100vh; overflow-x:hidden; letter-spacing:-0.01em;
+  }
+  body::before{
+    content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse 70% 50% at 20% 0%,rgba(129,140,248,.06),transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%,rgba(34,211,238,.04),transparent 50%);
+  }
+  body::after{
+    content:''; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.4;
+    background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(255,255,255,.006) 3px,rgba(255,255,255,.006) 4px);
+  }
+
+  .app{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:20px 20px 32px}
+
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .header-left h1{
+    font-size:1.8rem;font-weight:800;letter-spacing:-0.04em;
+    background:linear-gradient(135deg,var(--accent),var(--cyan),var(--violet));
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    background-size:200% 200%;animation:gradShift 8s ease infinite;
+  }
+  @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .header-left .sub{font-size:.74rem;color:var(--dim);margin-top:3px;letter-spacing:.03em}
+  .header-right{display:flex;gap:8px;align-items:center}
+  .btn-add{
+    padding:9px 18px;border-radius:12px;border:1px solid rgba(129,140,248,.25);
+    background:linear-gradient(135deg,rgba(129,140,248,.12),rgba(99,102,241,.06));
+    color:var(--accent);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .25s;
+    display:flex;align-items:center;gap:6px;white-space:nowrap;
+  }
+  .btn-add:hover{background:linear-gradient(135deg,rgba(129,140,248,.2),rgba(99,102,241,.1));transform:translateY(-1px);box-shadow:0 6px 20px rgba(129,140,248,.15)}
+  .btn-add:active{transform:translateY(0) scale(.97)}
+
+  .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  @media(max-width:560px){.stats-bar{grid-template-columns:repeat(2,1fr)}}
+  .stat-card{
+    background:linear-gradient(160deg,var(--card2),var(--card));
+    border:1px solid var(--border);border-radius:16px;padding:14px 16px;
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    position:relative;overflow:hidden;
+  }
+  .stat-card::before{
+    content:'';position:absolute;top:0;left:0;width:3px;height:100%;
+    background:var(--c,var(--accent));opacity:.6;
+  }
+  .stat-label{font-size:.62rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+  .stat-value{font-size:1.5rem;font-weight:900;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
+  .stat-value .unit{font-size:.7rem;font-weight:500;color:var(--dim);margin-left:2px}
+  .stat-sub{font-size:.6rem;color:var(--dim2);margin-top:2px}
+
+  .toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+  .search-box{
+    flex:1;min-width:180px;display:flex;align-items:center;gap:8px;
+    padding:9px 14px;border-radius:12px;border:1px solid var(--border);
+    background:var(--card);backdrop-filter:blur(12px);transition:border-color .2s;
+  }
+  .search-box:focus-within{border-color:rgba(129,140,248,.3)}
+  .search-box input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:.82rem;font-family:inherit}
+  .search-box input::placeholder{color:var(--dim2)}
+  .filter-chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{
+    padding:6px 14px;border-radius:20px;border:1px solid var(--border);
+    background:var(--card);color:var(--dim);font-size:.74rem;font-weight:600;cursor:pointer;
+    transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:4px;
+  }
+  .chip:hover{border-color:var(--border2);color:var(--text)}
+  .chip.active{background:rgba(129,140,248,.1);border-color:rgba(129,140,248,.25);color:var(--accent)}
+  .chip .count{font-size:.62rem;opacity:.6;font-variant-numeric:tabular-nums}
+
+  .sort-select{
+    padding:7px 12px;border-radius:10px;border:1px solid var(--border);
+    background:var(--card);color:var(--dim);font-size:.74rem;font-weight:600;cursor:pointer;outline:none;
+    font-family:inherit;
+  }
+  .sort-select option{background:var(--bg2);color:var(--text)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .item-card{
+    background:linear-gradient(160deg,var(--card2),var(--card));
+    border:1px solid var(--border);border-radius:18px;padding:18px;
+    backdrop-filter:blur(20px) saturate(1.2);-webkit-backdrop-filter:blur(20px) saturate(1.2);
+    box-shadow:0 8px 32px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.04);
+    transition:all .3s cubic-bezier(.34,1.4,.64,1);position:relative;overflow:hidden;cursor:pointer;
+    animation:cardIn .4s cubic-bezier(.34,1.4,.64,1) both;
+  }
+  @keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .item-card:hover{transform:translateY(-3px);border-color:var(--border2);box-shadow:0 12px 40px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06)}
+  .item-card::after{
+    content:'';position:absolute;top:0;left:-100%;width:50%;height:100%;
+    background:linear-gradient(105deg,transparent,rgba(255,255,255,.03),transparent);
+    animation:shimmer 8s infinite;pointer-events:none;
+  }
+  @keyframes shimmer{0%{left:-100%}100%{left:250%}}
+
+  .item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+  .item-icon-wrap{
+    width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    font-size:1.5rem;flex-shrink:0;position:relative;
+    background:var(--cat-bg);border:1px solid var(--cat-border);
+  }
+  .item-icon-wrap::after{content:'';position:absolute;inset:0;border-radius:14px;box-shadow:0 0 16px var(--cat-glow);opacity:.3;pointer-events:none}
+  .item-cat-badge{
+    padding:3px 10px;border-radius:20px;font-size:.6rem;font-weight:700;letter-spacing:.05em;
+    background:var(--cat-bg);border:1px solid var(--cat-border);color:var(--cat-color);
+  }
+  .item-name{font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:2px}
+  .item-brand{font-size:.72rem;color:var(--dim);margin-bottom:10px}
+  .item-info{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .item-price{font-size:1.15rem;font-weight:900;color:var(--cat-color);font-variant-numeric:tabular-nums;letter-spacing:-0.02em}
+  .item-price .unit{font-size:.68rem;font-weight:500;color:var(--dim);margin-left:1px}
+  .item-date{font-size:.66rem;color:var(--dim2);font-variant-numeric:tabular-nums}
+  .item-status{
+    position:absolute;top:14px;right:14px;padding:2px 8px;border-radius:10px;
+    font-size:.58rem;font-weight:700;letter-spacing:.04em;
+  }
+  .item-status.active{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.15);color:var(--mint)}
+  .item-status.idle{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.12);color:var(--warn)}
+  .item-status.sold{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.1);color:var(--danger);opacity:.7}
+  .item-actions{display:flex;gap:6px;margin-top:12px;opacity:0;transition:opacity .25s}
+  .item-card:hover .item-actions{opacity:1}
+  .item-btn{
+    flex:1;padding:6px;border-radius:10px;border:1px solid var(--border);
+    background:var(--card);color:var(--dim);font-size:.7rem;font-weight:600;cursor:pointer;transition:all .2s;
+  }
+  .item-btn:hover{background:rgba(129,140,248,.08);color:var(--accent);border-color:rgba(129,140,248,.2)}
+  .item-btn.danger:hover{background:rgba(248,113,113,.08);color:var(--danger);border-color:rgba(248,113,113,.2)}
+
+  .empty-state{text-align:center;padding:60px 20px;color:var(--dim2)}
+  .empty-state .icon{font-size:3rem;margin-bottom:12px;opacity:.3}
+  .empty-state .text{font-size:.85rem;margin-bottom:16px}
+  .empty-state .btn{padding:8px 20px;border-radius:12px;border:1px solid rgba(129,140,248,.2);background:rgba(129,140,248,.08);color:var(--accent);font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s}
+  .empty-state .btn:hover{background:rgba(129,140,248,.15)}
+
+  .footer{text-align:center;font-size:.62rem;color:var(--dim2);padding:8px 0;letter-spacing:.04em}
+
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    z-index:250;opacity:0;pointer-events:none;transition:opacity .3s;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-overlay.show{opacity:1;pointer-events:auto}
+  .modal{
+    background:linear-gradient(160deg,rgba(14,14,22,.97),rgba(8,8,13,.99));
+    border:1px solid var(--border2);border-radius:22px;padding:24px;width:100%;max-width:440px;
+    max-height:90vh;overflow-y:auto;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);transform:scale(.92) translateY(10px);transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  }
+  .modal-overlay.show .modal{transform:scale(1) translateY(0)}
+  .modal::-webkit-scrollbar{width:4px}
+  .modal::-webkit-scrollbar-thumb{background:rgba(129,140,248,.2);border-radius:2px}
+  .modal-title{font-size:1.1rem;font-weight:800;margin-bottom:18px;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px}
+  .form-group{margin-bottom:14px}
+  .form-label{font-size:.68rem;color:var(--dim);letter-spacing:.06em;margin-bottom:5px;display:block}
+  .form-input,.form-select,.form-textarea{
+    width:100%;padding:9px 12px;border-radius:12px;border:1px solid var(--border);
+    background:var(--card);color:var(--text);font-size:.82rem;font-family:inherit;transition:border-color .2s;
+  }
+  .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:rgba(129,140,248,.3)}
+  .form-input::placeholder{color:var(--dim2)}
+  .form-textarea{resize:vertical;min-height:60px}
+  .form-select option{background:var(--bg2)}
+  .form-row{display:flex;gap:10px}
+  .form-row .form-group{flex:1}
+  .form-cat-select{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .form-cat-btn{
+    padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--card);
+    color:var(--dim);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+  }
+  .form-cat-btn .ic{font-size:1.1rem}
+  .form-cat-btn:hover{border-color:var(--border2)}
+  .form-cat-btn.active{background:rgba(129,140,248,.1);border-color:rgba(129,140,248,.25);color:var(--accent)}
+  .form-status-select{display:flex;gap:6px}
+  .form-status-btn{
+    flex:1;padding:7px;border-radius:10px;border:1px solid var(--border);background:var(--card);
+    color:var(--dim);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;
+  }
+  .form-status-btn.active{background:rgba(129,140,248,.1);border-color:rgba(129,140,248,.25);color:var(--accent)}
+  .modal-actions{display:flex;gap:10px;margin-top:20px}
+  .modal-btn{flex:1;padding:11px;border-radius:14px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.84rem;font-weight:700;cursor:pointer;transition:all .2s}
+  .modal-btn:hover{background:rgba(129,140,248,.08)}
+  .modal-btn.primary{background:linear-gradient(135deg,rgba(129,140,248,.18),rgba(99,102,241,.1));border-color:rgba(129,140,248,.3);color:var(--accent)}
+  .modal-btn.primary:hover{background:linear-gradient(135deg,rgba(129,140,248,.28),rgba(99,102,241,.16))}
+  .modal-btn.danger{color:var(--danger);border-color:rgba(248,113,113,.15)}
+  .modal-btn.danger:hover{background:rgba(248,113,113,.08)}
+
+  .detail-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    z-index:240;opacity:0;pointer-events:none;transition:opacity .3s;
+  }
+  .detail-overlay.show{opacity:1;pointer-events:auto}
+  .detail-panel{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);
+    width:100%;max-width:480px;max-height:85vh;overflow-y:auto;
+    background:linear-gradient(180deg,rgba(14,14,22,.97),rgba(8,8,13,.99));
+    border:1px solid var(--border2);border-radius:24px 24px 0 0;padding:24px 20px;z-index:241;
+    transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 -10px 60px rgba(0,0,0,.5);
+  }
+  .detail-panel.show{transform:translateX(-50%) translateY(0)}
+  .detail-panel::-webkit-scrollbar{width:4px}
+  .detail-panel::-webkit-scrollbar-thumb{background:rgba(129,140,248,.2);border-radius:2px}
+  .detail-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:5}
+  .detail-close:hover{color:var(--text);border-color:var(--border2)}
+  .detail-header{text-align:center;margin-bottom:18px;padding-top:6px}
+  .detail-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 10px;background:var(--cat-bg);border:1px solid var(--cat-border)}
+  .detail-name{font-size:1.4rem;font-weight:900;letter-spacing:-0.03em;margin-bottom:2px}
+  .detail-brand{font-size:.78rem;color:var(--dim);letter-spacing:.04em}
+  .detail-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .detail-info-item{padding:12px;border-radius:14px;background:var(--card);border:1px solid var(--border)}
+  .detail-info-label{font-size:.62rem;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+  .detail-info-value{font-size:.88rem;font-weight:700;font-variant-numeric:tabular-nums}
+  .detail-note{padding:12px 14px;border-radius:14px;background:var(--card);border:1px solid var(--border);font-size:.8rem;color:var(--text);opacity:.8;line-height:1.6;margin-bottom:16px}
+  .detail-actions{display:flex;gap:10px}
+
+  .toast{
+    position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(120px);
+    background:linear-gradient(135deg,rgba(129,140,248,.12),rgba(99,102,241,.06));
+    border:1px solid rgba(129,140,248,.2);border-radius:16px;padding:11px 24px;
+    backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    font-size:.82rem;font-weight:600;z-index:300;opacity:0;
+    transition:all .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 32px rgba(0,0,0,.3);
+    display:flex;align-items:center;gap:8px;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .toast.danger{background:linear-gradient(135deg,rgba(248,113,113,.1),rgba(248,113,113,.04));border-color:rgba(248,113,113,.18)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <h1>🖥️ 电子产品展示柜</h1>
+      <div class="sub">个人电子设备收藏与管理</div>
+    </div>
+    <div class="header-right">
+      <button class="btn-add" onclick="openAdd()">➕ 添加设备</button>
+    </div>
+  </div>
+
+  <div class="stats-bar" id="stats-bar"></div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <span style="color:var(--dim2)">🔍</span>
+      <input type="text" id="search-input" placeholder="搜索设备名称或品牌..." oninput="renderGrid()">
+    </div>
+    <select class="sort-select" id="sort-select" onchange="renderGrid()">
+      <option value="date-desc">最近购买</option>
+      <option value="date-asc">最早购买</option>
+      <option value="price-desc">价格降序</option>
+      <option value="price-asc">价格升序</option>
+      <option value="name-asc">名称排序</option>
+    </select>
+  </div>
+
+  <div class="filter-chips" id="filter-chips" style="margin-bottom:16px"></div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="footer">🖥️ 电子产品展示柜 · 个人收藏管理 · 数据本地保存</div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">➕ 添加设备</div>
+    <div class="form-group">
+      <label class="form-label">设备名称</label>
+      <input type="text" class="form-input" id="f-name" placeholder="如 iPhone 15 Pro Max">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">品牌</label>
+        <input type="text" class="form-input" id="f-brand" placeholder="如 Apple">
+      </div>
+      <div class="form-group">
+        <label class="form-label">型号</label>
+        <input type="text" class="form-input" id="f-model" placeholder="如 A2849">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">分类</label>
+      <div class="form-cat-select" id="cat-select"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">购买价格</label>
+        <input type="number" class="form-input" id="f-price" placeholder="9999" min="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">购买日期</label>
+        <input type="date" class="form-input" id="f-date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">购买渠道</label>
+      <input type="text" class="form-input" id="f-channel" placeholder="如 京东自营 / Apple Store">
+    </div>
+    <div class="form-group">
+      <label class="form-label">状态</label>
+      <div class="form-status-select" id="status-select">
+        <button class="form-status-btn active" data-status="active" onclick="selectStatus(this)">🟢 在用</button>
+        <button class="form-status-btn" data-status="idle" onclick="selectStatus(this)">🟡 闲置</button>
+        <button class="form-status-btn" data-status="sold" onclick="selectStatus(this)">🔴 已出</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">备注</label>
+      <textarea class="form-textarea" id="f-note" placeholder="配置信息、使用感受等..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal()">取消</button>
+      <button class="modal-btn primary" id="modal-save" onclick="saveItem()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detail-panel">
+  <button class="detail-close" onclick="closeDetail()">✕</button>
+  <div id="detail-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORE_KEY='tech-showcase-data';
+const CATS=[
+  {key:'phone',label:'手机',icon:'📱',color:'#818CF8'},
+  {key:'laptop',label:'电脑',icon:'💻',color:'#22D3EE'},
+  {key:'audio',label:'音频',icon:'🎧',color:'#A78BFA'},
+  {key:'camera',label:'相机',icon:'📷',color:'#FBBF24'},
+  {key:'wear',label:'穿戴',icon:'⌚',color:'#4ADE80'},
+  {key:'other',label:'其他',icon:'🔌',color:'#F472B6'},
+];
+const STATUS_MAP={active:{label:'在用',icon:'🟢',cls:'active'},idle:{label:'闲置',icon:'🟡',cls:'idle'},sold:{label:'已出',icon:'🔴',cls:'sold'}};
+
+let items=[];
+let editId=null;
+let selectedCat='phone';
+let selectedStatus='active';
+let activeFilter='all';
+
+function loadData(){
+  try{const s=localStorage.getItem(STORE_KEY);if(s)items=JSON.parse(s)}catch(e){}
+  if(!Array.isArray(items))items=[];
+  if(items.length===0)items=seedData();
+}
+function saveData(){localStorage.setItem(STORE_KEY,JSON.stringify(items))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function catInfo(k){return CATS.find(c=>c.key===k)||CATS[5]}
+function fmtPrice(v){return v>=10000?(v/10000).toFixed(1)+'w':v.toString()}
+
+function seedData(){
+  return [
+    {id:uid(),name:'iPhone 15 Pro Max',brand:'Apple',model:'A2849',cat:'phone',price:9999,date:'2023-10-15',channel:'Apple Store',status:'active',note:'256GB 原色钛金属，主力机'},
+    {id:uid(),name:'MacBook Pro 14',brand:'Apple',model:'M3 Pro',cat:'laptop',price:14999,date:'2024-01-20',channel:'Apple Store',status:'active',note:'18GB+512GB 深空黑色'},
+    {id:uid(),name:'AirPods Pro 2',brand:'Apple',model:'USB-C',cat:'audio',price:1899,date:'2023-09-25',channel:'京东自营',status:'active',note:'降噪效果出色'},
+    {id:uid(),name:'Apple Watch Ultra 2',brand:'Apple',model:'A2986',cat:'wear',price:6299,date:'2024-03-10',channel:'Apple Store',status:'active',note:'钛金属表壳 蓝色海洋表带'},
+    {id:uid(),name:'Sony A7M4',brand:'Sony',model:'ILCE-7M4',cat:'camera',price:16999,date:'2022-06-01',channel:'淘宝',status:'idle',note:'全画幅微单 28-70套机'},
+    {id:uid(),name:'iPad Pro 12.9',brand:'Apple',model:'M2',cat:'laptop',price:8999,date:'2023-05-15',channel:'Apple Store',status:'idle',note:'256GB WiFi版'},
+    {id:uid(),name:'HHKB Pro2',brand:'PFU',model:'PD-KB400W',cat:'other',price:2500,date:'2021-08-10',channel:'亚马逊',status:'active',note:'静电容键盘 无刻版'},
+    {id:uid(),name:'Sony WH-1000XM5',brand:'Sony',model:'WH-1000XM5',cat:'audio',price:2899,date:'2022-09-01',channel:'京东自营',status:'sold',note:'已出给同事'},
+  ];
+}
+
+function getFiltered(){
+  let r=[...items];
+  if(activeFilter!=='all')r=r.filter(i=>i.cat===activeFilter);
+  const q=document.getElementById('search-input').value.trim().toLowerCase();
+  if(q)r=r.filter(i=>i.name.toLowerCase().includes(q)||(i.brand||'').toLowerCase().includes(q));
+  const sort=document.getElementById('sort-select').value;
+  r.sort((a,b)=>{
+    switch(sort){
+      case'date-desc':return(b.date||'').localeCompare(a.date||'');
+      case'date-asc':return(a.date||'').localeCompare(b.date||'');
+      case'price-desc':return(b.price||0)-(a.price||0);
+      case'price-asc':return(a.price||0)-(b.price||0);
+      case'name-asc':return(a.name||'').localeCompare(b.name||'');
+      default:return 0;
+    }
+  });
+  return r;
+}
+
+function renderStats(){
+  const active=items.filter(i=>i.status==='active');
+  const total=items.reduce((s,i)=>s+(i.price||0),0);
+  const activeVal=active.reduce((s,i)=>s+(i.price||0),0);
+  const cats=new Set(items.map(i=>i.cat)).size;
+  const sb=document.getElementById('stats-bar');
+  sb.innerHTML=`
+    <div class="stat-card" style="--c:var(--accent)">
+      <div class="stat-label">设备总数</div>
+      <div class="stat-value">${items.length}<span class="unit">件</span></div>
+      <div class="stat-sub">在用 ${active.length} · 闲置 ${items.filter(i=>i.status==='idle').length} · 已出 ${items.filter(i=>i.status==='sold').length}</div>
+    </div>
+    <div class="stat-card" style="--c:var(--cyan)">
+      <div class="stat-label">在用价值</div>
+      <div class="stat-value">¥${fmtPrice(activeVal)}</div>
+      <div class="stat-sub">${active.length} 件设备</div>
+    </div>
+    <div class="stat-card" style="--c:var(--violet)">
+      <div class="stat-label">累计投入</div>
+      <div class="stat-value">¥${fmtPrice(total)}</div>
+      <div class="stat-sub">含已出设备</div>
+    </div>
+    <div class="stat-card" style="--c:var(--mint)">
+      <div class="stat-label">分类覆盖</div>
+      <div class="stat-value">${cats}<span class="unit">/${CATS.length}</span></div>
+      <div class="stat-sub">类别</div>
+    </div>
+  `;
+}
+
+function renderChips(){
+  const fc=document.getElementById('filter-chips');
+  let html=`<div class="chip${activeFilter==='all'?' active':''}" onclick="setFilter('all')">全部 <span class="count">${items.length}</span></div>`;
+  CATS.forEach(c=>{
+    const n=items.filter(i=>i.cat===c.key).length;
+    html+=`<div class="chip${activeFilter===c.key?' active':''}" onclick="setFilter('${c.key}')">${c.icon} ${c.label} <span class="count">${n}</span></div>`;
+  });
+  fc.innerHTML=html;
+}
+
+function setFilter(f){activeFilter=f;renderGrid()}
+
+function renderGrid(){
+  renderStats();
+  renderChips();
+  const list=getFiltered();
+  const grid=document.getElementById('grid');
+  if(list.length===0){
+    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="icon">📦</div><div class="text">${items.length===0?'还没有添加任何设备':'没有符合条件的设备'}</div>${items.length===0?'<button class="btn" onclick="openAdd()">➕ 添加第一台设备</button>':''}</div>`;
+    return;
+  }
+  let html='';
+  list.forEach(item=>{
+    const c=catInfo(item.cat);
+    const st=STATUS_MAP[item.status]||STATUS_MAP.active;
+    const dateStr=item.date?item.date.replace(/-/g,'/'):'—';
+    html+=`<div class="item-card" style="--cat-color:${c.color};--cat-bg:${c.color}15;--cat-border:${c.color}30;--cat-glow:${c.color}" onclick="openDetail('${item.id}')">
+      <div class="item-status ${st.cls}">${st.icon} ${st.label}</div>
+      <div class="item-top">
+        <div class="item-icon-wrap">${c.icon}</div>
+        <div class="item-cat-badge">${c.label}</div>
+      </div>
+      <div class="item-name">${esc(item.name)}</div>
+      <div class="item-brand">${esc(item.brand||'')} ${item.model?'· '+esc(item.model):''}</div>
+      <div class="item-info">
+        <div class="item-price">¥${fmtPrice(item.price||0)}</div>
+        <div class="item-date">${dateStr}</div>
+      </div>
+      <div class="item-actions" onclick="event.stopPropagation()">
+        <button class="item-btn" onclick="openEdit('${item.id}')">✏️ 编辑</button>
+        <button class="item-btn danger" onclick="deleteItem('${item.id}')">🗑️ 删除</button>
+      </div>
+    </div>`;
+  });
+  grid.innerHTML=html;
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function openAdd(){
+  editId=null;
+  document.getElementById('modal-title').innerHTML='➕ 添加设备';
+  document.getElementById('f-name').value='';
+  document.getElementById('f-brand').value='';
+  document.getElementById('f-model').value='';
+  document.getElementById('f-price').value='';
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('f-channel').value='';
+  document.getElementById('f-note').value='';
+  selectedCat='phone';selectedStatus='active';
+  renderCatSelect();renderStatusSelect();
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function openEdit(id){
+  const item=items.find(i=>i.id===id);if(!item)return;
+  editId=id;
+  document.getElementById('modal-title').innerHTML='✏️ 编辑设备';
+  document.getElementById('f-name').value=item.name||'';
+  document.getElementById('f-brand').value=item.brand||'';
+  document.getElementById('f-model').value=item.model||'';
+  document.getElementById('f-price').value=item.price||'';
+  document.getElementById('f-date').value=item.date||'';
+  document.getElementById('f-channel').value=item.channel||'';
+  document.getElementById('f-note').value=item.note||'';
+  selectedCat=item.cat||'phone';selectedStatus=item.status||'active';
+  renderCatSelect();renderStatusSelect();
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('show')}
+
+function renderCatSelect(){
+  const cs=document.getElementById('cat-select');
+  cs.innerHTML=CATS.map(c=>`<button class="form-cat-btn${selectedCat===c.key?' active':''}" data-cat="${c.key}" onclick="selectCat(this)"><span class="ic">${c.icon}</span>${c.label}</button>`).join('');
+}
+function selectCat(btn){selectedCat=btn.dataset.cat;document.querySelectorAll('.form-cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===selectedCat))}
+function renderStatusSelect(){document.querySelectorAll('.form-status-btn').forEach(b=>b.classList.toggle('active',b.dataset.status===selectedStatus))}
+function selectStatus(btn){selectedStatus=btn.dataset.status;renderStatusSelect()}
+
+function saveItem(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){showToast('⚠️','请输入设备名称',false);return}
+  const obj={
+    name,
+    brand:document.getElementById('f-brand').value.trim(),
+    model:document.getElementById('f-model').value.trim(),
+    cat:selectedCat,
+    price:parseInt(document.getElementById('f-price').value)||0,
+    date:document.getElementById('f-date').value,
+    channel:document.getElementById('f-channel').value.trim(),
+    status:selectedStatus,
+    note:document.getElementById('f-note').value.trim(),
+  };
+  if(editId){
+    const idx=items.findIndex(i=>i.id===editId);
+    if(idx>=0){items[idx]={...items[idx],...obj};showToast('✏️','已更新 '+name,false)}
+  }else{
+    obj.id=uid();items.unshift(obj);showToast('➕','已添加 '+name,false)
+  }
+  saveData();closeModal();renderGrid();
+}
+
+function deleteItem(id){
+  const item=items.find(i=>i.id===id);if(!item)return;
+  if(!confirm(`确认删除「${item.name}」？`))return;
+  items=items.filter(i=>i.id!==id);
+  saveData();renderGrid();
+  showToast('🗑️','已删除 '+item.name,true);
+}
+
+function openDetail(id){
+  const item=items.find(i=>i.id===id);if(!item)return;
+  const c=catInfo(item.cat);
+  const st=STATUS_MAP[item.status]||STATUS_MAP.active;
+  const dateStr=item.date?item.date.replace(/-/g,'/'):'—';
+  const dc=document.getElementById('detail-content');
+  dc.style.setProperty('--cat-bg',c.color+'15');
+  dc.style.setProperty('--cat-border',c.color+'30');
+  dc.innerHTML=`
+    <div class="detail-header">
+      <div class="detail-icon" style="background:${c.color}15;border:1px solid ${c.color}30">${c.icon}</div>
+      <div class="detail-name" style="color:${c.color}">${esc(item.name)}</div>
+      <div class="detail-brand">${esc(item.brand||'')} ${item.model?'· '+esc(item.model):''} · ${st.icon} ${st.label}</div>
+    </div>
+    <div class="detail-info-grid">
+      <div class="detail-info-item"><div class="detail-info-label">购买价格</div><div class="detail-info-value" style="color:${c.color}">¥ ${(item.price||0).toLocaleString()}</div></div>
+      <div class="detail-info-item"><div class="detail-info-label">购买日期</div><div class="detail-info-value">${dateStr}</div></div>
+      <div class="detail-info-item"><div class="detail-info-label">购买渠道</div><div class="detail-info-value">${esc(item.channel||'—')}</div></div>
+      <div class="detail-info-item"><div class="detail-info-label">设备分类</div><div class="detail-info-value">${c.icon} ${c.label}</div></div>
+    </div>
+    ${item.note?`<div class="detail-note">📝 ${esc(item.note)}</div>`:''}
+    <div class="detail-actions">
+      <button class="modal-btn" onclick="closeDetail();openEdit('${item.id}')">✏️ 编辑</button>
+      <button class="modal-btn danger" onclick="closeDetail();deleteItem('${item.id}')">🗑️ 删除</button>
+    </div>
+  `;
+  document.getElementById('detail-overlay').classList.add('show');
+  document.getElementById('detail-panel').classList.add('show');
+  document.getElementById('detail-panel').style.setProperty('--cat-bg',c.color+'15');
+  document.getElementById('detail-panel').style.setProperty('--cat-border',c.color+'30');
+}
+function closeDetail(){
+  document.getElementById('detail-overlay').classList.remove('show');
+  document.getElementById('detail-panel').classList.remove('show');
+}
+
+let toastTimer;
+function showToast(icon,msg,danger){
+  const t=document.getElementById('toast');
+  t.innerHTML=`<span>${icon}</span><span>${msg}</span>`;
+  t.classList.toggle('danger',!!danger);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+loadData();
+renderGrid();
+</script>
+</body>
+</html>
