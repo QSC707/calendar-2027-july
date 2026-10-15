@@ -7,10 +7,10 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
-    --bg:#1a1510; --bg2:#241e16;
-    --card:rgba(255,245,230,0.04); --card2:rgba(255,245,230,0.07);
-    --border:rgba(200,149,109,0.1); --border2:rgba(200,149,109,0.18);
-    --text:#E8DCC8; --dim:#9A8B72; --dim2:#5E5240;
+    --bg:#17120d; --bg2:#221b13;
+    --card:rgba(255,245,230,0.035); --card2:rgba(255,245,230,0.065);
+    --border:rgba(200,149,109,0.09); --border2:rgba(200,149,109,0.16);
+    --text:#EBDFCB; --dim:#9A8B72; --dim2:#5E5240;
     --jade:#5D8A6E; --jade2:#4A7D5C; --amber:#C8956D; --amber2:#B8814A;
     --gold:#D4A857; --rust:#B5654A; --cream:#E8DCC8; --sage:#8B9D7A;
     --green:#7BAE6E; --white:#D4CFC0; --yellow:#D4B85E; --oolong:#B5885A; --black:#9B5E4A; --dark:#6B4A3A;
@@ -23,67 +23,81 @@
   body::before{
     content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
     background:
-      radial-gradient(ellipse 70% 50% at 20% 0%,rgba(93,138,110,.06),transparent 55%),
-      radial-gradient(ellipse 60% 40% at 80% 30%,rgba(200,149,109,.05),transparent 50%),
-      radial-gradient(ellipse 50% 40% at 50% 100%,rgba(212,168,87,.03),transparent 50%);
+      radial-gradient(ellipse 70% 50% at 15% 0%,rgba(93,138,110,.07),transparent 55%),
+      radial-gradient(ellipse 60% 40% at 85% 20%,rgba(200,149,109,.06),transparent 50%),
+      radial-gradient(ellipse 50% 40% at 50% 100%,rgba(212,168,87,.04),transparent 50%);
   }
   body::after{
-    content:''; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.4;
-    background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(200,149,109,.008) 3px,rgba(200,149,109,.008) 4px);
+    content:''; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
+    background-image:radial-gradient(circle,rgba(200,149,109,.012) 1px,transparent 1px);
+    background-size:28px 28px;
   }
 
   .steam{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
   .steam-particle{
-    position:absolute;bottom:-20px;width:4px;height:40px;
-    background:linear-gradient(180deg,rgba(232,220,200,.06),transparent);
-    border-radius:50%;filter:blur(3px);
+    position:absolute;bottom:-30px;width:6px;height:50px;
+    background:linear-gradient(180deg,rgba(232,220,200,.05),transparent);
+    border-radius:50%;filter:blur(4px);
     animation:steamRise linear infinite;
   }
   @keyframes steamRise{
-    0%{transform:translateY(0) translateX(0) scaleY(.5);opacity:0}
-    20%{opacity:.4}
-    100%{transform:translateY(-100vh) translateX(30px) scaleY(1.5);opacity:0}
+    0%{transform:translateY(0) translateX(0) scaleY(.4);opacity:0}
+    15%{opacity:.35}
+    50%{transform:translateY(-50vh) translateX(15px) scaleY(1.2)}
+    90%{opacity:.15}
+    100%{transform:translateY(-110vh) translateX(-10px) scaleY(1.5);opacity:0}
   }
 
-  .app{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:20px 20px 32px}
+  .app{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:20px 20px 32px}
 
-  .header{text-align:center;margin-bottom:24px}
+  .header{text-align:center;margin-bottom:22px}
   .header h1{
     font-size:2rem;font-weight:800;letter-spacing:-0.04em;
-    background:linear-gradient(135deg,var(--jade),var(--amber),var(--gold));
+    background:linear-gradient(135deg,var(--jade) 0%,var(--amber) 50%,var(--gold) 100%);
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
     background-size:200% 200%;animation:gradShift 8s ease infinite;
   }
   @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
   .header .sub{font-size:.76rem;color:var(--dim);margin-top:5px;letter-spacing:.04em}
-  .header .poem{font-size:.72rem;color:var(--dim2);margin-top:8px;font-style:italic;letter-spacing:.06em}
+  .header .poem{font-size:.72rem;color:var(--dim2);margin-top:8px;font-style:italic;letter-spacing:.06em;transition:opacity .6s}
 
   .glass{
     background:linear-gradient(160deg,var(--card2),var(--card));
     border:1px solid var(--border);border-radius:20px;
     backdrop-filter:blur(20px) saturate(1.2);-webkit-backdrop-filter:blur(20px) saturate(1.2);
     box-shadow:0 8px 32px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,245,230,.04);
+    position:relative;
   }
 
-  .hero{padding:28px 24px;margin-bottom:18px;text-align:center;position:relative;overflow:hidden}
+  .hero{padding:30px 24px;margin-bottom:18px;text-align:center;overflow:hidden}
   .hero::before{
     content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
-    background:radial-gradient(ellipse 35% 25% at 50% 50%,rgba(93,138,110,.06),transparent);
+    background:radial-gradient(ellipse 35% 25% at 50% 50%,rgba(93,138,110,.07),transparent);
     pointer-events:none;
   }
   .hero::after{
     content:'';position:absolute;top:0;left:-100%;width:50%;height:100%;
-    background:linear-gradient(105deg,transparent,rgba(255,245,230,.03),transparent);
-    animation:shimmer 8s infinite;pointer-events:none;
+    background:linear-gradient(105deg,transparent,rgba(255,245,230,.04),transparent);
+    animation:shimmer 9s infinite;pointer-events:none;
   }
   @keyframes shimmer{0%{left:-100%}100%{left:250%}}
-  .hero-icon{font-size:3rem;margin-bottom:10px;display:inline-block;animation:leafSway 4s ease-in-out infinite}
-  @keyframes leafSway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
-  .hero-title{font-size:1.3rem;font-weight:800;margin-bottom:8px;letter-spacing:-0.02em}
-  .hero-desc{font-size:.82rem;color:var(--dim);line-height:1.7;max-width:560px;margin:0 auto}
+  .hero-cup{width:80px;height:80px;margin:0 auto 12px;position:relative}
+  .hero-cup svg{width:100%;height:100%;animation:cupFloat 4s ease-in-out infinite}
+  @keyframes cupFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .hero-cup .cup-steam{animation:cupSteam 2s ease-in-out infinite}
+  @keyframes cupSteam{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:.6;transform:translateY(-4px)}}
+  .hero-title{font-size:1.35rem;font-weight:800;margin-bottom:8px;letter-spacing:-0.02em}
+  .hero-desc{font-size:.82rem;color:var(--dim);line-height:1.7;max-width:580px;margin:0 auto}
+
+  .fermentation-bar{margin:16px auto 0;max-width:500px}
+  .ferm-track{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px}
+  .ferm-seg{flex:1;border-radius:2px;transition:all .3s;cursor:pointer;position:relative}
+  .ferm-seg:hover{flex:1.3;filter:brightness(1.2)}
+  .ferm-labels{display:flex;justify-content:space-between;margin-top:6px;font-size:.58rem;color:var(--dim2)}
+  .ferm-labels span{text-align:center;flex:1;letter-spacing:.02em}
 
   .section-title{
-    font-size:.72rem;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;
+    font-size:.7rem;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;
     margin-bottom:14px;display:flex;align-items:center;gap:8px;
   }
   .section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
@@ -93,28 +107,33 @@
   @media(max-width:420px){.tea-grid{grid-template-columns:1fr}}
 
   .tea-card{
-    padding:18px 16px;cursor:pointer;position:relative;overflow:hidden;
+    padding:18px 16px;cursor:pointer;overflow:hidden;
     transition:all .35s cubic-bezier(.34,1.4,.64,1);
     animation:cardIn .5s cubic-bezier(.34,1.4,.64,1) both;
   }
-  @keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-  .tea-card:hover{transform:translateY(-3px);border-color:var(--tc);box-shadow:0 12px 40px rgba(0,0,0,.3),0 0 20px var(--tc-bg)}
+  @keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .tea-card:hover{transform:translateY(-4px);border-color:var(--tc);box-shadow:0 14px 44px rgba(0,0,0,.3),0 0 24px var(--tc-bg)}
   .tea-card::before{
     content:'';position:absolute;top:0;left:0;right:0;height:3px;
     background:linear-gradient(90deg,transparent,var(--tc),transparent);opacity:.6;
   }
+  .tea-card::after{
+    content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--tc),transparent);opacity:0;transition:opacity .3s;
+  }
+  .tea-card:hover::after{opacity:.4}
   .tea-card-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
   .tea-icon-wrap{
-    width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;
-    font-size:1.4rem;flex-shrink:0;background:var(--tc-bg);border:1px solid var(--tc-border);
+    width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    font-size:1.45rem;flex-shrink:0;background:var(--tc-bg);border:1px solid var(--tc-border);
     transition:all .3s;
   }
-  .tea-card:hover .tea-icon-wrap{box-shadow:0 0 16px var(--tc-bg);transform:scale(1.05)}
-  .tea-name{font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;transition:color .25s}
+  .tea-card:hover .tea-icon-wrap{box-shadow:0 0 18px var(--tc-bg);transform:scale(1.06) rotate(-3deg)}
+  .tea-name{font-size:1.08rem;font-weight:800;letter-spacing:-0.02em;transition:color .25s}
   .tea-card:hover .tea-name{color:var(--tc)}
   .tea-en{font-size:.66rem;color:var(--dim);letter-spacing:.04em}
   .tea-desc{font-size:.74rem;color:var(--dim);line-height:1.6;margin-bottom:10px}
-  .tea-meta{display:flex;gap:8px;flex-wrap:wrap}
+  .tea-meta{display:flex;gap:6px;flex-wrap:wrap}
   .tea-tag{
     padding:3px 9px;border-radius:10px;font-size:.6rem;font-weight:700;letter-spacing:.03em;
     background:var(--tc-bg);border:1px solid var(--tc-border);color:var(--tc);
@@ -129,52 +148,58 @@
     transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:4px;
   }
   .brew-tab:hover{border-color:var(--border2);color:var(--text)}
-  .brew-tab.active{background:var(--tab-bg);border-color:var(--tab-border);color:var(--tc)}
+  .brew-tab.active{background:var(--tab-bg);border-color:var(--tab-border);color:var(--tc);box-shadow:0 2px 12px var(--tab-bg)}
   .brew-content{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:560px){.brew-content{grid-template-columns:1fr}}
 
   .brew-info{padding:16px}
-  .brew-info-title{font-size:.68rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
-  .brew-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+  .brew-info-title{font-size:.66rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+  .brew-steps{position:relative}
+  .brew-steps::before{content:'';position:absolute;left:11px;top:12px;bottom:12px;width:2px;background:linear-gradient(180deg,var(--tc),transparent);opacity:.2}
+  .brew-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;position:relative}
   .brew-step-num{
-    width:24px;height:24px;border-radius:50%;flex-shrink:0;
+    width:24px;height:24px;border-radius:50%;flex-shrink:0;z-index:1;
     display:flex;align-items:center;justify-content:center;
-    font-size:.68rem;font-weight:800;background:var(--tc-bg);border:1px solid var(--tc-border);color:var(--tc);
+    font-size:.66rem;font-weight:800;background:var(--tc-bg);border:1px solid var(--tc-border);color:var(--tc);
+    transition:all .3s;
   }
+  .tea-card:hover .brew-step-num,.brew-info:hover .brew-step-num{box-shadow:0 0 8px var(--tc-bg)}
   .brew-step-text{font-size:.78rem;color:var(--text);line-height:1.6;flex:1}
   .brew-step-text .hl{color:var(--tc);font-weight:700}
 
-  .brew-params{padding:16px;display:flex;flex-direction:column;gap:12px}
-  .param-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:12px;background:var(--card);border:1px solid var(--border)}
+  .brew-params{padding:16px;display:flex;flex-direction:column;gap:10px}
+  .param-row{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:12px;background:var(--card);border:1px solid var(--border);transition:border-color .2s}
+  .param-row:hover{border-color:var(--border2)}
   .param-label{font-size:.72rem;color:var(--dim);display:flex;align-items:center;gap:6px}
   .param-value{font-size:.82rem;font-weight:800;color:var(--tc);font-variant-numeric:tabular-nums}
   .param-value .unit{font-size:.66rem;color:var(--dim);font-weight:500;margin-left:2px}
 
+  .temp-gauge{margin-top:4px}
+  .temp-bar{height:6px;border-radius:3px;background:linear-gradient(90deg,#5DADE2,#F4D03F,#E67E22,#E74C3C);position:relative;overflow:hidden}
+  .temp-marker{position:absolute;top:-3px;width:4px;height:12px;border-radius:2px;background:var(--cream);box-shadow:0 0 6px rgba(232,220,200,.5);transition:left .4s cubic-bezier(.34,1.4,.64,1)}
+
   .timer-card{padding:20px;margin-bottom:18px;text-align:center}
-  .timer-display{
-    font-size:3rem;font-weight:900;letter-spacing:-0.04em;font-variant-numeric:tabular-nums;
-    color:var(--jade);text-shadow:0 0 24px rgba(93,138,110,.2);margin:10px 0;
-  }
-  .timer-display .unit{font-size:1rem;color:var(--dim);font-weight:500;text-shadow:none}
+  .timer-ring-wrap{position:relative;width:160px;height:160px;margin:0 auto 10px}
+  .timer-ring{width:100%;height:100%;transform:rotate(-90deg)}
+  .timer-ring-bg{fill:none;stroke:rgba(255,245,230,.05);stroke-width:6}
+  .timer-ring-fg{fill:none;stroke:url(#timerGrad);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .3s linear;filter:drop-shadow(0 0 6px rgba(93,138,110,.3))}
+  .timer-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .timer-display{font-size:2.4rem;font-weight:900;letter-spacing:-0.04em;font-variant-numeric:tabular-nums;color:var(--jade);line-height:1}
+  .timer-display .unit{font-size:.85rem;color:var(--dim);font-weight:500}
+  .timer-sub{font-size:.62rem;color:var(--dim2);margin-top:2px;letter-spacing:.04em}
   .timer-label{font-size:.74rem;color:var(--dim);margin-bottom:12px}
-  .timer-controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .timer-controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
   .timer-btn{
-    padding:9px 22px;border-radius:14px;border:1px solid var(--border);
+    padding:9px 20px;border-radius:14px;border:1px solid var(--border);
     background:var(--card);color:var(--text);font-size:.82rem;font-weight:700;cursor:pointer;
-    transition:all .25s;display:flex;align-items:center;gap:6px;
+    transition:all .25s cubic-bezier(.34,1.4,.64,1);display:flex;align-items:center;gap:6px;
   }
   .timer-btn:hover{border-color:var(--border2);transform:translateY(-1px)}
+  .timer-btn:active{transform:translateY(0) scale(.97)}
   .timer-btn.primary{background:linear-gradient(135deg,rgba(93,138,110,.18),rgba(74,125,92,.1));border-color:rgba(93,138,110,.3);color:var(--jade)}
-  .timer-btn.primary:hover{background:linear-gradient(135deg,rgba(93,138,110,.28),rgba(74,125,92,.16))}
+  .timer-btn.primary:hover{background:linear-gradient(135deg,rgba(93,138,110,.28),rgba(74,125,92,.16));box-shadow:0 6px 20px rgba(93,138,110,.15)}
   .timer-btn.danger{color:var(--rust);border-color:rgba(181,101,74,.15)}
   .timer-btn.danger:hover{background:rgba(181,101,74,.08)}
-  .timer-progress{
-    width:100%;height:6px;border-radius:3px;background:var(--card);overflow:hidden;margin-top:14px;
-  }
-  .timer-progress-fill{
-    height:100%;border-radius:3px;background:linear-gradient(90deg,var(--jade),var(--amber));
-    transition:width .3s linear;width:0%;
-  }
   .timer-select{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
   .timer-select-btn{
     padding:6px 14px;border-radius:20px;border:1px solid var(--border);
@@ -183,11 +208,11 @@
   .timer-select-btn:hover{border-color:var(--border2)}
   .timer-select-btn.active{background:rgba(93,138,110,.1);border-color:rgba(93,138,110,.25);color:var(--jade)}
 
-  .ware-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+  .ware-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px;margin-bottom:18px}
   .ware-card{padding:16px;text-align:center;transition:all .3s;cursor:default}
-  .ware-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+  .ware-card:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 8px 24px rgba(0,0,0,.2)}
   .ware-icon{font-size:2.2rem;margin-bottom:8px;display:inline-block;transition:transform .3s}
-  .ware-card:hover .ware-icon{transform:scale(1.1)}
+  .ware-card:hover .ware-icon{transform:scale(1.12) rotate(-5deg)}
   .ware-name{font-size:.82rem;font-weight:800;margin-bottom:3px}
   .ware-desc{font-size:.66rem;color:var(--dim);line-height:1.5}
 
@@ -196,10 +221,11 @@
   @media(max-width:560px){.tips-list{grid-template-columns:1fr}}
   .tip-item{
     display:flex;gap:10px;padding:12px;border-radius:14px;background:var(--card);border:1px solid var(--border);
-    transition:border-color .2s;
+    transition:all .25s;
   }
-  .tip-item:hover{border-color:var(--border2)}
-  .tip-icon{font-size:1.3rem;flex-shrink:0}
+  .tip-item:hover{border-color:var(--border2);transform:translateX(2px)}
+  .tip-icon{font-size:1.3rem;flex-shrink:0;transition:transform .3s}
+  .tip-item:hover .tip-icon{transform:scale(1.15)}
   .tip-text{font-size:.74rem;color:var(--text);line-height:1.6;flex:1}
   .tip-text .title{font-weight:800;color:var(--amber);display:block;margin-bottom:2px;font-size:.78rem}
 
@@ -213,7 +239,7 @@
   .detail-panel{
     position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);
     width:100%;max-width:480px;max-height:85vh;overflow-y:auto;
-    background:linear-gradient(180deg,rgba(36,30,22,.97),rgba(26,21,16,.99));
+    background:linear-gradient(180deg,rgba(34,27,19,.97),rgba(23,18,13,.99));
     border:1px solid var(--border2);border-radius:24px 24px 0 0;padding:24px 20px;z-index:241;
     transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 -10px 60px rgba(0,0,0,.5);
   }
@@ -225,8 +251,8 @@
 
   .toast{
     position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(120px);
-    background:linear-gradient(135deg,rgba(93,138,110,.12),rgba(74,125,92,.06));
-    border:1px solid rgba(93,138,110,.2);border-radius:16px;padding:11px 24px;
+    background:linear-gradient(135deg,rgba(93,138,110,.14),rgba(74,125,92,.06));
+    border:1px solid rgba(93,138,110,.22);border-radius:16px;padding:11px 24px;
     backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
     font-size:.82rem;font-weight:600;z-index:300;opacity:0;
     transition:all .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 32px rgba(0,0,0,.3);
@@ -241,13 +267,28 @@
   <div class="header">
     <h1>🍵 泡茶科普</h1>
     <div class="sub">中国六大茶类 · 冲泡指南 · 茶道入门</div>
-    <div class="poem">「寒夜客来茶当酒，竹炉汤沸火初红」</div>
+    <div class="poem" id="poem">「寒夜客来茶当酒，竹炉汤沸火初红」</div>
   </div>
 
   <div class="glass hero">
-    <div class="hero-icon">🍃</div>
+    <div class="hero-cup">
+      <svg viewBox="0 0 80 80">
+        <ellipse cx="40" cy="18" rx="18" ry="3" fill="none" stroke="rgba(200,149,109,.3)" stroke-width="1.5"/>
+        <path d="M 22 18 L 25 60 Q 25 65 30 65 L 50 65 Q 55 65 55 60 L 58 18 Z" fill="rgba(93,138,110,.08)" stroke="rgba(200,149,109,.25)" stroke-width="1.5"/>
+        <path d="M 25 30 Q 25 50 28 58" fill="none" stroke="rgba(255,245,230,.06)" stroke-width="1" stroke-linecap="round"/>
+        <path d="M 55 30 Q 55 50 52 58" fill="none" stroke="rgba(255,245,230,.04)" stroke-width="1" stroke-linecap="round"/>
+        <g class="cup-steam">
+          <path d="M 35 12 Q 33 6 35 0" fill="none" stroke="rgba(232,220,200,.15)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 45 12 Q 47 6 45 0" fill="none" stroke="rgba(232,220,200,.12)" stroke-width="2" stroke-linecap="round"/>
+        </g>
+      </svg>
+    </div>
     <div class="hero-title">一片树叶的故事</div>
     <div class="hero-desc">中国茶按发酵程度分为六大类：绿茶（不发酵）、白茶（微发酵）、黄茶（轻发酵）、青茶（半发酵）、红茶（全发酵）、黑茶（后发酵）。每种茶都有独特的冲泡方法，水温、投茶量、浸泡时间决定了一杯茶的好坏。</div>
+    <div class="fermentation-bar">
+      <div class="ferm-track" id="ferm-track"></div>
+      <div class="ferm-labels" id="ferm-labels"></div>
+    </div>
   </div>
 
   <div class="section-title">🌿 六大茶类</div>
@@ -265,14 +306,29 @@
     <div class="section-title" style="justify-content:center">⏱️ 冲泡计时器</div>
     <div class="timer-select" id="timer-select"></div>
     <div class="timer-label" id="timer-label">选择茶类，设置时间后开始计时</div>
-    <div class="timer-display" id="timer-display">0<span class="unit">s</span></div>
+    <div class="timer-ring-wrap">
+      <svg class="timer-ring" viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="timerGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#5D8A6E"/>
+            <stop offset="50%" stop-color="#C8956D"/>
+            <stop offset="100%" stop-color="#D4A857"/>
+          </linearGradient>
+        </defs>
+        <circle class="timer-ring-bg" cx="50" cy="50" r="44"/>
+        <circle class="timer-ring-fg" id="timer-ring-fg" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="276.46"/>
+      </svg>
+      <div class="timer-ring-text">
+        <div class="timer-display" id="timer-display">0<span class="unit">s</span></div>
+        <div class="timer-sub" id="timer-sub">准备开始</div>
+      </div>
+    </div>
     <div class="timer-controls">
       <button class="timer-btn primary" id="timer-start" onclick="toggleTimer()">▶️ 开始</button>
       <button class="timer-btn" onclick="resetTimer()">🔄 重置</button>
       <button class="timer-btn danger" onclick="adjustTime(-5)">➖ 5s</button>
       <button class="timer-btn" onclick="adjustTime(5)">➕ 5s</button>
     </div>
-    <div class="timer-progress"><div class="timer-progress-fill" id="timer-fill"></div></div>
   </div>
 
   <div class="section-title">🏺 茶器一览</div>
@@ -296,37 +352,37 @@
 
 <script>
 const TEAS=[
-  {key:'green',name:'绿茶',en:'Green Tea',icon:'🌿',color:'#7BAE6E',fermentation:'不发酵 (0%)',temp:'80-85℃',ratio:'1:50',time:'1-3分钟',steps:[
+  {key:'green',name:'绿茶',en:'Green Tea',icon:'🌿',color:'#7BAE6E',fermentation:'不发酵 (0%)',fermPct:0,temp:'80-85℃',tempPct:25,ratio:'1:50',time:'1-3分钟',steps:[
     {t:'玻璃杯或盖碗，<b class="hl">80-85℃</b>水温',h:'水温过高会破坏维生素C，导致苦涩'},
     {t:'投茶量 <b class="hl">3g</b>，茶水比 <b class="hl">1:50</b>',h:'约150ml水配3g茶'},
     {t:'第一泡 <b class="hl">1分钟</b>，后续每泡延长30秒',h:'绿茶不宜久泡'},
     {t:'可泡 <b class="hl">2-3次</b>',h:'名优绿茶可品3-4次'},
   ],desc:'不发酵茶，保留鲜叶天然物质，清汤绿叶，滋味清爽鲜醇。富含茶多酚和维生素C。',tips:'水温忌过高，现泡现饮，不宜隔夜。'},
-  {key:'white',name:'白茶',en:'White Tea',icon:'🍂',color:'#D4CFC0',fermentation:'微发酵 (5-10%)',temp:'90-95℃',ratio:'1:25',time:'2-5分钟',steps:[
+  {key:'white',name:'白茶',en:'White Tea',icon:'🍂',color:'#D4CFC0',fermentation:'微发酵 (5-10%)',fermPct:7,temp:'90-95℃',tempPct:55,ratio:'1:25',time:'2-5分钟',steps:[
     {t:'盖碗或煮茶壶，<b class="hl">90-95℃</b>水温',h:'老白茶可用100℃沸水'},
     {t:'投茶量 <b class="hl">5g</b>，茶水比 <b class="hl">1:25</b>',h:'白茶较轻，可适当多投'},
     {t:'第一泡 <b class="hl">2分钟</b>，逐泡延长',h:'新白茶快泡，老白茶慢煮'},
     {t:'可泡 <b class="hl">5-8次</b>',h:'老白茶耐泡度极高'},
   ],desc:'微发酵茶，工艺最简，只经萎凋和干燥。毫香蜜韵，滋味清甜柔和。一年茶三年药七年宝。',tips:'新茶水温稍低，老茶可煮饮。'},
-  {key:'yellow',name:'黄茶',en:'Yellow Tea',icon:'🌾',color:'#D4B85E',fermentation:'轻发酵 (10-20%)',temp:'85-90℃',ratio:'1:50',time:'2-3分钟',steps:[
+  {key:'yellow',name:'黄茶',en:'Yellow Tea',icon:'🌾',color:'#D4B85E',fermentation:'轻发酵 (10-20%)',fermPct:15,temp:'85-90℃',tempPct:40,ratio:'1:50',time:'2-3分钟',steps:[
     {t:'玻璃杯或盖碗，<b class="hl">85-90℃</b>水温',h:'黄茶娇嫩，水温不宜过高'},
     {t:'投茶量 <b class="hl">3g</b>，茶水比 <b class="hl">1:50</b>',h:'与绿茶相似'},
     {t:'第一泡 <b class="hl">2分钟</b>',h:'闷黄工艺使滋味更醇厚'},
     {t:'可泡 <b class="hl">3-4次</b>',h:'黄茶耐泡度略高于绿茶'},
   ],desc:'轻发酵茶，独特"闷黄"工艺形成黄汤黄叶。滋味甜醇，介于绿茶和白茶之间。产量稀少。',tips:'君山银针、蒙顶黄芽为代表，水温忌过高。'},
-  {key:'oolong',name:'青茶',en:'Oolong Tea',icon:'🍃',color:'#B5885A',fermentation:'半发酵 (15-70%)',temp:'95-100℃',ratio:'1:20',time:'1-2分钟',steps:[
+  {key:'oolong',name:'青茶',en:'Oolong Tea',icon:'🍃',color:'#B5885A',fermentation:'半发酵 (15-70%)',fermPct:40,temp:'95-100℃',tempPct:85,ratio:'1:20',time:'1-2分钟',steps:[
     {t:'盖碗或紫砂壶，<b class="hl">100℃</b>沸水',h:'高温激发乌龙香气'},
     {t:'投茶量 <b class="hl">7-8g</b>，茶水比 <b class="hl">1:20</b>',h:'投茶量较大，半壶茶叶'},
     {t:'第一泡 <b class="hl">洗茶不饮</b>，第二泡 <b class="hl">1分钟</b>',h:'快冲快出，避免闷泡'},
     {t:'可泡 <b class="hl">7-10次</b>',h:'好乌龙"七泡有余香"'},
   ],desc:'半发酵茶，介于绿茶和红茶之间。香气馥郁，滋味醇厚回甘。铁观音、大红袍、单丛为代表。',tips:'必须沸水冲泡，快冲快出，闻香品韵。'},
-  {key:'black',name:'红茶',en:'Black Tea',icon:'🍁',color:'#9B5E4A',fermentation:'全发酵 (80-90%)',temp:'90-95℃',ratio:'1:50',time:'3-5分钟',steps:[
+  {key:'black',name:'红茶',en:'Black Tea',icon:'🍁',color:'#9B5E4A',fermentation:'全发酵 (80-90%)',fermPct:85,temp:'90-95℃',tempPct:60,ratio:'1:50',time:'3-5分钟',steps:[
     {t:'盖碗或瓷壶，<b class="hl">90-95℃</b>水温',h:'沸水会出酸味'},
     {t:'投茶量 <b class="hl">3-5g</b>，茶水比 <b class="hl">1:50</b>',h:'可加奶加糖调饮'},
     {t:'第一泡 <b class="hl">3-5分钟</b>',h:'红茶可适当久泡'},
     {t:'可泡 <b class="hl">4-6次</b>',h:'正山小种、祁门红茶耐泡'},
   ],desc:'全发酵茶，茶汤红艳明亮，滋味甜醇。性温和，暖胃护心。世界产量最大的茶类。',tips:'水温不宜过高，可调饮，适合秋冬。'},
-  {key:'dark',name:'黑茶',en:'Dark Tea',icon:'🪵',color:'#6B4A3A',fermentation:'后发酵 (100%)',temp:'100℃',ratio:'1:20',time:'3-5分钟',steps:[
+  {key:'dark',name:'黑茶',en:'Dark Tea',icon:'🪵',color:'#6B4A3A',fermentation:'后发酵 (100%)',fermPct:100,temp:'100℃',tempPct:95,ratio:'1:20',time:'3-5分钟',steps:[
     {t:'煮茶壶或紫砂壶，<b class="hl">100℃</b>沸水',h:'黑茶粗老，需高温'},
     {t:'投茶量 <b class="hl">5-8g</b>，茶水比 <b class="hl">1:20</b>',h:'紧压茶需先撬散'},
     {t:'第一泡 <b class="hl">洗茶</b>，第二泡 <b class="hl">3分钟</b>',h:'可煮饮，越煮越醇'},
@@ -354,13 +410,30 @@ const TIPS=[
   {icon:'📦',title:'存茶要讲究',text:'密封、避光、防潮、防异味。绿茶冷藏，黑茶通风，白茶常温。'},
 ];
 
+const POEMS=[
+  '「寒夜客来茶当酒，竹炉汤沸火初红」',
+  '「从来佳茗似佳人」——苏轼',
+  '「茶亦醉人何须酒，书能香我何须花」',
+  '「一器成名只为茗，悦来客满是茶香」',
+  '「食罢一瓯犹未饱，更煎一瓯润枯肠」',
+  '「茗生此中石，玉泉流不歇」——李白',
+];
+
 let activeTea='green';
 let timerInterval=null;
 let timerSec=60;
 let timerTotal=60;
 let timerRunning=false;
+let poemIdx=0;
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function renderFermBar(){
+  const track=document.getElementById('ferm-track');
+  const labels=document.getElementById('ferm-labels');
+  track.innerHTML=TEAS.map(t=>`<div class="ferm-seg" style="background:${t.color}" onclick="openDetail('${t.key}')" title="${t.name}"></div>`).join('');
+  labels.innerHTML=TEAS.map(t=>`<span>${t.name}</span>`).join('');
+}
 
 function renderTeaGrid(){
   const g=document.getElementById('tea-grid');
@@ -390,9 +463,6 @@ function renderBrewTabs(){
 function renderBrewContent(){
   const t=TEAS.find(x=>x.key===activeTea);
   const c=document.getElementById('brew-content');
-  c.style.setProperty('--tc',t.color);
-  c.style.setProperty('--tc-bg',t.color+'18');
-  c.style.setProperty('--tc-border',t.color+'30');
   let stepsHtml='';
   t.steps.forEach((s,i)=>{
     stepsHtml+=`<div class="brew-step"><div class="brew-step-num">${i+1}</div><div class="brew-step-text">${s.t}<br><span style="color:var(--dim);font-size:.68rem">${s.h}</span></div></div>`;
@@ -400,11 +470,12 @@ function renderBrewContent(){
   c.innerHTML=`
     <div class="glass brew-info" style="--tc:${t.color};--tc-bg:${t.color}18;--tc-border:${t.color}30">
       <div class="brew-info-title">${t.icon} ${t.name}冲泡步骤</div>
-      ${stepsHtml}
+      <div class="brew-steps">${stepsHtml}</div>
     </div>
     <div class="glass brew-params" style="--tc:${t.color};--tc-bg:${t.color}18;--tc-border:${t.color}30">
       <div class="brew-info-title">冲泡参数</div>
       <div class="param-row"><span class="param-label">🌡️ 水温</span><span class="param-value">${t.temp}</span></div>
+      <div class="temp-gauge"><div class="temp-bar"><div class="temp-marker" style="left:${t.tempPct}%"></div></div></div>
       <div class="param-row"><span class="param-label">⚖️ 茶水比</span><span class="param-value">${t.ratio}</span></div>
       <div class="param-row"><span class="param-label">⏱️ 浸泡时间</span><span class="param-value">${t.time}</span></div>
       <div class="param-row"><span class="param-label">🔄 发酵程度</span><span class="param-value">${t.fermentation}</span></div>
@@ -446,10 +517,10 @@ function openDetail(key){
       <div class="param-row" style="--tc:${t.color}"><span class="param-label">🔄 发酵</span><span class="param-value" style="color:${t.color}">${t.fermentation}</span></div>
     </div>
     <div class="brew-info-title" style="margin-bottom:10px">${t.icon} 冲泡步骤</div>
-    ${stepsHtml}
+    <div class="brew-steps" style="--tc:${t.color};--tc-bg:${t.color}18;--tc-border:${t.color}30">${stepsHtml}</div>
     <div style="padding:12px 14px;border-radius:14px;background:var(--card);border:1px solid var(--border);font-size:.76rem;color:var(--text);opacity:.8;line-height:1.6;margin-top:14px">💡 ${t.tips}</div>
     <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="timer-btn primary" style="flex:1" onclick="closeDetail();selectBrew('${t.key}');document.getElementById('brew-section')?.scrollIntoView({behavior:'smooth'})">🔥 查看冲泡指南</button>
+      <button class="timer-btn primary" style="flex:1" onclick="closeDetail();selectBrew('${t.key}');document.querySelector('.brew-section').scrollIntoView({behavior:'smooth'})">🔥 查看冲泡指南</button>
     </div>
   `;
   document.getElementById('detail-overlay').classList.add('show');
@@ -473,6 +544,7 @@ function setTimerTea(key){
   timerSec=sec;timerTotal=sec;
   updateTimerDisplay();
   document.getElementById('timer-label').textContent=`${t.icon} ${t.name} · 建议浸泡 ${t.time}`;
+  document.getElementById('timer-sub').textContent=t.name;
 }
 
 function updateTimerDisplay(){
@@ -481,25 +553,28 @@ function updateTimerDisplay(){
   const d=document.getElementById('timer-display');
   if(m>0)d.innerHTML=`${m}<span class="unit">m</span> ${s}<span class="unit">s</span>`;
   else d.innerHTML=`${s}<span class="unit">s</span>`;
-  const pct=timerTotal>0?((timerTotal-timerSec)/timerTotal*100):0;
-  document.getElementById('timer-fill').style.width=Math.min(100,pct)+'%';
+  const circumference=276.46;
+  const pct=timerTotal>0?(timerTotal-timerSec)/timerTotal:0;
+  document.getElementById('timer-ring-fg').setAttribute('stroke-dashoffset',circumference*(1-pct));
 }
 
 function toggleTimer(){
   if(timerRunning){
     clearInterval(timerInterval);timerRunning=false;
     document.getElementById('timer-start').innerHTML='▶️ 继续';
+    document.getElementById('timer-sub').textContent='已暂停';
   }else{
     if(timerSec<=0){timerSec=timerTotal;updateTimerDisplay()}
     timerRunning=true;
     document.getElementById('timer-start').innerHTML='⏸️ 暂停';
+    document.getElementById('timer-sub').textContent='冲泡中...';
     timerInterval=setInterval(()=>{
       timerSec--;
       updateTimerDisplay();
       if(timerSec<=0){
         clearInterval(timerInterval);timerRunning=false;
         document.getElementById('timer-start').innerHTML='▶️ 开始';
-        const t=TEAS.find(x=>x.key===activeTea);
+        document.getElementById('timer-sub').textContent='已完成';
         showToast('🍵','时间到！请出汤品茶');
       }
     },1000);
@@ -510,6 +585,7 @@ function resetTimer(){
   clearInterval(timerInterval);timerRunning=false;
   timerSec=timerTotal;updateTimerDisplay();
   document.getElementById('timer-start').innerHTML='▶️ 开始';
+  document.getElementById('timer-sub').textContent='准备开始';
 }
 
 function adjustTime(delta){
@@ -526,20 +602,28 @@ function showToast(icon,msg){
   toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
 }
 
+function rotatePoem(){
+  poemIdx=(poemIdx+1)%POEMS.length;
+  const p=document.getElementById('poem');
+  p.style.opacity=0;
+  setTimeout(()=>{p.textContent=POEMS[poemIdx];p.style.opacity=1},300);
+}
+
 function initSteam(){
   const c=document.getElementById('steam');
-  for(let i=0;i<12;i++){
+  for(let i=0;i<14;i++){
     const s=document.createElement('div');
     s.className='steam-particle';
-    s.style.left=(10+Math.random()*80)+'%';
-    s.style.animationDuration=(6+Math.random()*6)+'s';
-    s.style.animationDelay=Math.random()*6+'s';
+    s.style.left=(8+Math.random()*84)+'%';
+    s.style.animationDuration=(8+Math.random()*8)+'s';
+    s.style.animationDelay=Math.random()*8+'s';
     c.appendChild(s);
   }
 }
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail()});
 
+renderFermBar();
 renderTeaGrid();
 renderBrewTabs();
 renderBrewContent();
@@ -548,6 +632,7 @@ renderTips();
 renderTimerSelect();
 setTimerTea('green');
 initSteam();
+setInterval(rotatePoem,5000);
 </script>
 </body>
 </html>
