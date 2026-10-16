@@ -1,0 +1,10 @@
+{
+  "workName": "照片墙·Photo Wall",
+  "introduction": "悬挂式照片展示网站，模拟现实挂绳照片墙，木夹子悬挂+摇曳动画+拍立得风格+灯箱查看，数据本地持久化",
+  "gitUrl": "https://github.com/QSC707/calendar-2027-july.git",
+  "gitBranch": "master",
+  "campId": "e4c24564-04f0-42f0-8980-695fee23dcc3",
+  "htmlFile": "index.html",
+  "domainId": "057cc3d0d68010e60fb3c0075a0af360",
+  "region": "cn-north-4"
+}

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>照片墙 · Photo Wall</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#1e1a14; --bg2:#2a241c;
+    --wall:rgba(255,240,220,0.03); --wall2:rgba(255,240,220,0.05);
+    --border:rgba(200,170,130,0.1); --border2:rgba(200,170,130,0.18);
+    --text:#E8DCC8; --dim:#9A8B72; --dim2:#5E5240;
+    --string:#7A6A5A; --pin:#A08060; --pin2:#8A7048;
+    --polaroid:#F5F0E8; --polaroid-shadow:rgba(0,0,0,0.3);
+    --amber:#C8956D; --gold:#D4A857; --rust:#B5654A; --sage:#8B9D7A;
+  }
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Segoe UI','SF Pro Display',system-ui,sans-serif;
+    min-height:100vh; overflow-x:hidden; letter-spacing:-0.01em;
+  }
+  body::before{
+    content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 0%,rgba(200,149,109,.06),transparent 55%),
+      radial-gradient(ellipse 60% 40% at 80% 100%,rgba(212,168,87,.04),transparent 50%);
+  }
+  body::after{
+    content:''; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.4;
+    background-image:radial-gradient(circle,rgba(200,170,130,.01) 1px,transparent 1px);
+    background-size:30px 30px;
+  }
+
+  .app{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:20px 20px 40px}
+
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .header-left h1{
+    font-size:1.85rem;font-weight:800;letter-spacing:-0.04em;
+    background:linear-gradient(135deg,var(--amber),var(--gold),var(--rust));
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    background-size:200% 200%;animation:gradShift 8s ease infinite;
+  }
+  @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .header-left .sub{font-size:.74rem;color:var(--dim);margin-top:4px;letter-spacing:.04em}
+  .header-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .btn{
+    padding:9px 18px;border-radius:12px;border:1px solid var(--border2);
+    background:linear-gradient(135deg,rgba(200,149,109,.1),rgba(184,129,74,.04));
+    color:var(--amber);font-size:.8rem;font-weight:700;cursor:pointer;transition:all .25s;
+    display:flex;align-items:center;gap:6px;white-space:nowrap;
+  }
+  .btn:hover{background:linear-gradient(135deg,rgba(200,149,109,.18),rgba(184,129,74,.08));transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,149,109,.12)}
+  .btn:active{transform:translateY(0) scale(.97)}
+  .btn.secondary{background:var(--wall);border-color:var(--border);color:var(--dim)}
+  .btn.secondary:hover{background:var(--wall2);color:var(--text)}
+
+  .stats{display:flex;gap:16px;margin-bottom:16px;font-size:.72rem;color:var(--dim)}
+  .stats span{display:flex;align-items:center;gap:4px}
+  .stats .num{font-weight:800;color:var(--amber);font-size:.88rem;font-variant-numeric:tabular-nums}
+
+  .wall{
+    background:linear-gradient(180deg,rgba(42,36,28,.4),rgba(30,26,20,.2));
+    border:1px solid var(--border);border-radius:20px;padding:30px 20px 20px;
+    min-height:400px;position:relative;overflow:hidden;
+    backdrop-filter:blur(10px);
+  }
+  .wall::before{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(200,149,109,.04),transparent);
+  }
+
+  .string-row{
+    position:relative;margin-bottom:10px;padding-top:30px;
+    min-height:200px;display:flex;justify-content:center;gap:20px;flex-wrap:wrap;
+  }
+  .string-line{
+    position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--string) 5%,var(--string) 95%,transparent);
+    border-radius:1px;opacity:.5;
+  }
+  .string-line::before{
+    content:'';position:absolute;top:1px;left:0;right:0;height:6px;
+    background:linear-gradient(180deg,rgba(122,106,90,.15),transparent);
+    border-radius:50%;filter:blur(2px);
+  }
+  .string-pin{
+    position:absolute;top:-4px;left:50%;transform:translateX(-50%);
+    width:12px;height:20px;z-index:2;
+  }
+  .string-pin::before{
+    content:'';position:absolute;top:0;left:2px;width:8px;height:12px;
+    background:linear-gradient(180deg,var(--pin),var(--pin2));
+    border-radius:2px 2px 4px 4px;
+    box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  .string-pin::after{
+    content:'';position:absolute;top:10px;left:4px;width:4px;height:8px;
+    background:var(--pin2);border-radius:1px;
+    box-shadow:0 1px 2px rgba(0,0,0,.2);
+  }
+
+  .photo{
+    position:relative;width:160px;cursor:pointer;
+    transform-origin:top center;
+    animation:sway 4s ease-in-out infinite;
+    transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .3s;
+  }
+  @keyframes sway{
+    0%,100%{transform:rotate(var(--rot,0deg))}
+    50%{transform:rotate(calc(var(--rot,0deg) + 1.5deg))}
+  }
+  .photo:hover{
+    animation:none;
+    transform:rotate(0deg) scale(1.15) translateY(-8px);
+    z-index:10;
+  }
+  .photo-frame{
+    background:var(--polaroid);
+    padding:10px 10px 14px;
+    border-radius:3px;
+    box-shadow:0 4px 16px var(--polaroid-shadow),0 2px 4px rgba(0,0,0,.2);
+    transition:box-shadow .3s;
+    position:relative;
+  }
+  .photo:hover .photo-frame{
+    box-shadow:0 16px 48px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.2),0 0 24px rgba(200,149,109,.15);
+  }
+  .photo-img{
+    width:100%;aspect-ratio:1/1.1;border-radius:2px;
+    background:var(--img-bg);position:relative;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .photo-img::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(135deg,rgba(255,255,255,.1),transparent 50%);
+    pointer-events:none;
+  }
+  .photo-emoji{font-size:2.5rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))}
+  .photo-caption{
+    font-size:.7rem;color:#5a4a3a;text-align:center;margin-top:8px;
+    font-family:'Georgia',serif;font-style:italic;letter-spacing:.02em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .photo-date{font-size:.58rem;color:#8a7a6a;text-align:center;margin-top:2px;font-family:'Georgia',serif}
+
+  .photo-add{
+    width:160px;cursor:pointer;transform-origin:top center;
+    transition:transform .3s;
+  }
+  .photo-add:hover{transform:scale(1.05)}
+  .photo-add-frame{
+    background:rgba(255,240,220,.04);border:2px dashed var(--border2);
+    padding:10px 10px 14px;border-radius:3px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    aspect-ratio:1/1.3;transition:all .25s;
+  }
+  .photo-add:hover .photo-add-frame{background:rgba(200,149,109,.06);border-color:var(--amber)}
+  .photo-add-icon{font-size:2rem;color:var(--dim);margin-bottom:6px}
+  .photo-add-text{font-size:.7rem;color:var(--dim);text-align:center}
+
+  .empty-wall{text-align:center;padding:60px 20px;color:var(--dim2)}
+  .empty-wall .icon{font-size:3rem;margin-bottom:12px;opacity:.3}
+  .empty-wall .text{font-size:.85rem;margin-bottom:16px}
+
+  .footer{text-align:center;font-size:.62rem;color:var(--dim2);padding:12px 0;letter-spacing:.04em}
+
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    z-index:250;opacity:0;pointer-events:none;transition:opacity .3s;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-overlay.show{opacity:1;pointer-events:auto}
+  .modal{
+    background:linear-gradient(160deg,rgba(42,36,28,.97),rgba(30,26,20,.99));
+    border:1px solid var(--border2);border-radius:22px;padding:24px;width:100%;max-width:420px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);transform:scale(.92);transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  }
+  .modal-overlay.show .modal{transform:scale(1)}
+  .modal-title{font-size:1.05rem;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .form-group{margin-bottom:14px}
+  .form-label{font-size:.68rem;color:var(--dim);margin-bottom:5px;display:block;letter-spacing:.04em}
+  .form-input,.form-select,.form-textarea{
+    width:100%;padding:9px 12px;border-radius:12px;border:1px solid var(--border);
+    background:var(--wall);color:var(--text);font-size:.82rem;font-family:inherit;transition:border-color .2s;
+  }
+  .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:rgba(200,149,109,.3)}
+  .form-input::placeholder{color:var(--dim2)}
+  .form-textarea{resize:vertical;min-height:50px}
+  .form-row{display:flex;gap:10px}
+  .form-row .form-group{flex:1}
+  .emoji-picker{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+  .emoji-btn{
+    padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--wall);
+    font-size:1.1rem;cursor:pointer;transition:all .15s;text-align:center;
+  }
+  .emoji-btn:hover{background:rgba(200,149,109,.1);border-color:var(--border2)}
+  .emoji-btn.active{background:rgba(200,149,109,.15);border-color:var(--amber);transform:scale(1.1)}
+  .color-picker{display:flex;gap:6px;flex-wrap:wrap}
+  .color-btn{
+    width:32px;height:32px;border-radius:10px;border:2px solid transparent;cursor:pointer;transition:all .2s;
+  }
+  .color-btn:hover{transform:scale(1.1)}
+  .color-btn.active{border-color:var(--amber);transform:scale(1.1);box-shadow:0 0 12px rgba(200,149,109,.3)}
+  .modal-actions{display:flex;gap:10px;margin-top:20px}
+  .modal-btn{flex:1;padding:11px;border-radius:14px;border:1px solid var(--border);background:var(--wall);color:var(--text);font-size:.84rem;font-weight:700;cursor:pointer;transition:all .2s}
+  .modal-btn:hover{background:rgba(200,149,109,.08)}
+  .modal-btn.primary{background:linear-gradient(135deg,rgba(200,149,109,.18),rgba(184,129,74,.1));border-color:rgba(200,149,109,.3);color:var(--amber)}
+  .modal-btn.primary:hover{background:linear-gradient(135deg,rgba(200,149,109,.28),rgba(184,129,74,.16))}
+  .modal-btn.danger{color:var(--rust);border-color:rgba(181,101,74,.15)}
+  .modal-btn.danger:hover{background:rgba(181,101,74,.08)}
+
+  .lightbox{
+    position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    z-index:260;opacity:0;pointer-events:none;transition:opacity .3s;
+    display:flex;align-items:center;justify-content:center;padding:40px;
+  }
+  .lightbox.show{opacity:1;pointer-events:auto}
+  .lightbox-content{
+    background:var(--polaroid);padding:20px 20px 28px;border-radius:4px;
+    max-width:400px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.5);
+    transform:scale(.85) rotate(-2deg);transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .lightbox.show .lightbox-content{transform:scale(1) rotate(0deg)}
+  .lightbox-img{
+    width:100%;aspect-ratio:1/1.1;border-radius:2px;
+    background:var(--img-bg);display:flex;align-items:center;justify-content:center;
+    position:relative;overflow:hidden;
+  }
+  .lightbox-img::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(135deg,rgba(255,255,255,.1),transparent 50%);
+  }
+  .lightbox-emoji{font-size:5rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.2))}
+  .lightbox-caption{font-size:1rem;color:#5a4a3a;text-align:center;margin-top:14px;font-family:'Georgia',serif;font-style:italic}
+  .lightbox-date{font-size:.78rem;color:#8a7a6a;text-align:center;margin-top:4px;font-family:'Georgia',serif}
+  .lightbox-close{
+    position:fixed;top:20px;right:20px;width:40px;height:40px;border-radius:50%;
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+    color:var(--text);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:all .2s;z-index:261;
+  }
+  .lightbox-close:hover{background:rgba(255,255,255,.2);transform:rotate(90deg)}
+  .lightbox-nav{
+    position:fixed;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+    color:var(--text);font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:all .2s;z-index:261;
+  }
+  .lightbox-nav:hover{background:rgba(255,255,255,.16)}
+  .lightbox-nav.prev{left:20px}
+  .lightbox-nav.next{right:20px}
+
+  .toast{
+    position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(120px);
+    background:linear-gradient(135deg,rgba(200,149,109,.12),rgba(184,129,74,.06));
+    border:1px solid rgba(200,149,109,.2);border-radius:16px;padding:11px 24px;
+    backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    font-size:.82rem;font-weight:600;z-index:300;opacity:0;
+    transition:all .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 32px rgba(0,0,0,.3);
+    display:flex;align-items:center;gap:8px;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .toast.danger{background:linear-gradient(135deg,rgba(181,101,74,.1),rgba(181,101,74,.04));border-color:rgba(181,101,74,.18)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <h1>📷 照片墙</h1>
+      <div class="sub">悬挂式照片展示 · 记录美好瞬间</div>
+    </div>
+    <div class="header-right">
+      <button class="btn secondary" onclick="shufflePhotos()">🔀 随机排列</button>
+      <button class="btn" onclick="openAdd()">➕ 添加照片</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="wall" id="wall"></div>
+
+  <div class="footer">📷 照片墙 · 悬挂展示 · 数据本地保存</div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">➕ 添加照片</div>
+    <div class="form-group">
+      <label class="form-label">选择图标</label>
+      <div class="emoji-picker" id="emoji-picker"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">选择颜色</label>
+      <div class="color-picker" id="color-picker"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">照片标题</label>
+      <input type="text" class="form-input" id="f-caption" placeholder="如 海边日落" maxlength="20">
+    </div>
+    <div class="form-group">
+      <label class="form-label">日期</label>
+      <input type="date" class="form-input" id="f-date">
+    </div>
+    <div class="form-actions" id="modal-actions">
+      <div class="modal-actions">
+        <button class="modal-btn" onclick="closeModal()">取消</button>
+        <button class="modal-btn primary" onclick="savePhoto()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="if(event.target===this)closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-nav prev" onclick="navLightbox(-1)">‹</button>
+  <button class="lightbox-nav next" onclick="navLightbox(1)">›</button>
+  <div class="lightbox-content" id="lightbox-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORE_KEY='photo-wall-data';
+const EMOJIS=['🌅','🌊','🏔️','🌸','🍂','❄️','🌺','🌻','🌙','⭐','🌈','🎈','🎂','🍰','☕','🍷','🍕','🍔','🎬','🎵','🎮','📚','✈️','🚗','🏃','💪','🐶','🐱','🦋','🌸','🍀','🌹','💐','🎁','🏆','💻','📱','📷','🎨','🔥','💧'];
+const COLORS=[
+  '#C8956D','#D4A857','#B5654A','#5D8A6E','#8B9D7A','#7BAE6E',
+  '#A78BFA','#818CF8','#22D3EE','#F472B6','#FBBF24','#9B5E4A',
+  '#6B4A3A','#4A7D5C','#B8814A','#34D399'
+];
+
+let photos=[];
+let editId=null;
+let selectedEmoji='🌅';
+let selectedColor='#C8956D';
+let lightboxIdx=0;
+
+function loadData(){
+  try{const s=localStorage.getItem(STORE_KEY);if(s)photos=JSON.parse(s)}catch(e){}
+  if(!Array.isArray(photos))photos=[];
+  if(photos.length===0)photos=seedData();
+}
+function saveData(){localStorage.setItem(STORE_KEY,JSON.stringify(photos))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+function seedData(){
+  return [
+    {id:uid(),emoji:'🌅',color:'#C8956D',caption:'海边日落',date:'2024-07-15'},
+    {id:uid(),emoji:'🌊',color:'#22D3EE',caption:'夏日海滩',date:'2024-08-01'},
+    {id:uid(),emoji:'🏔️',color:'#8B9D7A',caption:'雪山之巅',date:'2024-01-20'},
+    {id:uid(),emoji:'🌸',color:'#F472B6',caption:'樱花季',date:'2024-04-05'},
+    {id:uid(),emoji:'🍂',color:'#D4A857',caption:'秋日漫步',date:'2024-10-18'},
+    {id:uid(),emoji:'❄️',color:'#818CF8',caption:'初雪',date:'2024-12-03'},
+    {id:uid(),emoji:'🎂',color:'#FBBF24',caption:'生日快乐',date:'2024-03-22'},
+    {id:uid(),emoji:'☕',color:'#B5654A',caption:'午后咖啡',date:'2024-09-10'},
+    {id:uid(),emoji:'✈️',color:'#A78BFA',caption:'出发旅行',date:'2024-06-28'},
+    {id:uid(),emoji:'🐶',color:'#D4A857',caption:'毛孩子',date:'2024-05-14'},
+    {id:uid(),emoji:'🎬',color:'#9B5E4A',caption:'电影之夜',date:'2024-11-02'},
+    {id:uid(),emoji:'🌺',color:'#F472B6',caption:'热带花园',date:'2024-07-30'},
+  ];
+}
+
+function renderStats(){
+  const s=document.getElementById('stats');
+  const dates=photos.map(p=>p.date).filter(Boolean);
+  const earliest=dates.length?dates.sort()[0]:'—';
+  const latest=dates.length?dates.sort().reverse()[0]:'—';
+  s.innerHTML=`<span>📸 共 <span class="num">${photos.length}</span> 张</span><span>📅 <span class="num">${earliest}</span> ~ <span class="num">${latest}</span></span>`;
+}
+
+function renderWall(){
+  renderStats();
+  const wall=document.getElementById('wall');
+  if(photos.length===0){
+    wall.innerHTML=`<div class="empty-wall"><div class="icon">📷</div><div class="text">还没有照片，点击添加你的第一张回忆</div><button class="btn" onclick="openAdd()">➕ 添加照片</button></div>`;
+    return;
+  }
+  const perRow=4;
+  const rows=Math.ceil((photos.length+1)/perRow);
+  let html='';
+  for(let r=0;r<rows;r++){
+    html+='<div class="string-row"><div class="string-line"></div>';
+    for(let c=0;c<perRow;c++){
+      const idx=r*perRow+c;
+      if(idx>=photos.length){
+        if(idx===photos.length){
+          html+=`<div class="photo-add" onclick="openAdd()"><div class="photo-add-frame"><div class="photo-add-icon">➕</div><div class="photo-add-text">添加照片</div></div></div>`;
+        }
+        continue;
+      }
+      const p=photos[idx];
+      const rot=(Math.random()-0.5)*8;
+      const delay=Math.random()*2;
+      html+=`<div class="photo" style="--rot:${rot}deg;animation-delay:${delay}s" onclick="openLightbox(${idx})">
+        <div class="string-pin"></div>
+        <div class="photo-frame">
+          <div class="photo-img" style="--img-bg:linear-gradient(135deg,${p.color},${p.color}88)"><span class="photo-emoji">${p.emoji}</span></div>
+          <div class="photo-caption">${esc(p.caption||'')}</div>
+          <div class="photo-date">${p.date||''}</div>
+        </div>
+      </div>`;
+    }
+    html+='</div>';
+  }
+  wall.innerHTML=html;
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function shufflePhotos(){
+  for(let i=photos.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [photos[i],photos[j]]=[photos[j],photos[i]];
+  }
+  saveData();renderWall();
+  showToast('🔀','已随机排列');
+}
+
+function renderEmojiPicker(){
+  const p=document.getElementById('emoji-picker');
+  p.innerHTML=EMOJIS.map(e=>`<button class="emoji-btn${selectedEmoji===e?' active':''}" onclick="selectEmoji('${e}',this)">${e}</button>`).join('');
+}
+function selectEmoji(e,btn){selectedEmoji=e;document.querySelectorAll('.emoji-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+
+function renderColorPicker(){
+  const p=document.getElementById('color-picker');
+  p.innerHTML=COLORS.map(c=>`<button class="color-btn${selectedColor===c?' active':''}" style="background:linear-gradient(135deg,${c},${c}88)" onclick="selectColor('${c}',this)"></button>`).join('');
+}
+function selectColor(c,btn){selectedColor=c;document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+
+function openAdd(){
+  editId=null;
+  document.getElementById('modal-title').innerHTML='➕ 添加照片';
+  document.getElementById('f-caption').value='';
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  selectedEmoji='🌅';selectedColor='#C8956D';
+  renderEmojiPicker();renderColorPicker();
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function closeModal(){document.getElementById('modal-overlay').classList.remove('show')}
+
+function savePhoto(){
+  const caption=document.getElementById('f-caption').value.trim();
+  if(!caption){showToast('⚠️','请输入照片标题','danger');return}
+  const obj={
+    emoji:selectedEmoji,color:selectedColor,
+    caption,date:document.getElementById('f-date').value,
+  };
+  obj.id=uid();photos.push(obj);
+  saveData();closeModal();renderWall();
+  showToast('📷','已添加「'+caption+'」');
+}
+
+function openLightbox(idx){
+  lightboxIdx=idx;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('show')}
+function navLightbox(dir){
+  lightboxIdx=(lightboxIdx+dir+photos.length)%photos.length;
+  updateLightbox();
+}
+function updateLightbox(){
+  const p=photos[lightboxIdx];
+  const c=document.getElementById('lightbox-content');
+  c.style.setProperty('--img-bg',`linear-gradient(135deg,${p.color},${p.color}88)`);
+  c.innerHTML=`
+    <div class="lightbox-img" style="--img-bg:linear-gradient(135deg,${p.color},${p.color}88)"><span class="lightbox-emoji">${p.emoji}</span></div>
+    <div class="lightbox-caption">${esc(p.caption||'')}</div>
+    <div class="lightbox-date">${p.date||''}</div>
+  `;
+}
+
+function deleteCurrent(){
+  if(lightboxIdx<0||lightboxIdx>=photos.length)return;
+  const p=photos[lightboxIdx];
+  if(!confirm(`确认删除「${p.caption}」？`))return;
+  photos.splice(lightboxIdx,1);
+  saveData();closeLightbox();renderWall();
+  showToast('🗑️','已删除','danger');
+}
+
+let toastTimer;
+function showToast(icon,msg,danger){
+  const t=document.getElementById('toast');
+  t.innerHTML=`<span>${icon}</span><span>${msg}</span>`;
+  t.classList.toggle('danger',!!danger);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeModal();closeLightbox()}
+  if(e.key==='ArrowLeft'&&document.getElementById('lightbox').classList.contains('show'))navLightbox(-1);
+  if(e.key==='ArrowRight'&&document.getElementById('lightbox').classList.contains('show'))navLightbox(1);
+});
+
+loadData();
+renderWall();
+</script>
+</body>
+</html>
