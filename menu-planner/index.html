@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>食历 · 一年菜单规划</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+  :root {
+    --bg: #f5f5f7;
+    --card: #ffffff;
+    --ink: #1d1d1f;
+    --sub: #86868b;
+    --line: #d2d2d7;
+    --blue: #0071e3;
+    --bf: #f5a623;
+    --ln: #ff6b35;
+    --dn: #6b8e23;
+    --weekend: #fff5f0;
+    --today: #0071e3;
+    --fest: #d6336c;
+  }
+  html, body { background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif; line-height: 1.5; }
+  body { min-height: 100vh; }
+
+  /* ===== Header ===== */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(245,245,247,0.82); backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .header-inner { max-width: 1180px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+  .brand .tag { font-size: 13px; color: var(--sub); font-weight: 500; }
+  .month-nav { display: flex; align-items: center; gap: 16px; }
+  .month-nav button {
+    background: var(--card); border: 1px solid var(--line); border-radius: 980px;
+    width: 36px; height: 36px; cursor: pointer; font-size: 16px; color: var(--ink);
+    display: flex; align-items: center; justify-content: center; transition: all .2s ease;
+  }
+  .month-nav button:hover { background: var(--ink); color: #fff; border-color: var(--ink); transform: scale(1.05); }
+  .month-label { font-size: 17px; font-weight: 600; min-width: 130px; text-align: center; letter-spacing: -0.01em; }
+  .today-btn {
+    background: var(--blue); color: #fff; border: none; border-radius: 980px;
+    padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s ease;
+  }
+  .today-btn:hover { background: #0077ed; transform: scale(1.03); }
+
+  /* ===== Month chips ===== */
+  .chips { max-width: 1180px; margin: 18px auto 0; padding: 0 24px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    background: var(--card); border: 1px solid var(--line); border-radius: 980px;
+    padding: 6px 14px; font-size: 13px; font-weight: 500; color: var(--sub); cursor: pointer; transition: all .2s ease;
+  }
+  .chip:hover { color: var(--ink); border-color: var(--ink); }
+  .chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .chip.has-fest { position: relative; }
+  .chip.has-fest::after { content: ""; position: absolute; top: 4px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--fest); }
+
+  /* ===== Stats bar ===== */
+  .stats { max-width: 1180px; margin: 22px auto 0; padding: 0 24px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .stat {
+    flex: 1; min-width: 140px; background: var(--card); border-radius: 16px; padding: 16px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .stat .num { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .stat .lbl { font-size: 12px; color: var(--sub); margin-top: 2px; font-weight: 500; }
+  .stat .num small { font-size: 14px; font-weight: 500; color: var(--sub); }
+
+  /* ===== Week cards ===== */
+  main { max-width: 1180px; margin: 28px auto 60px; padding: 0 24px; }
+  .week {
+    background: var(--card); border-radius: 20px; margin-bottom: 20px; overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 8px 24px -8px rgba(0,0,0,0.06);
+    transition: transform .3s ease, box-shadow .3s ease;
+    opacity: 0; transform: translateY(12px);
+    animation: rise .5s ease forwards;
+  }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+  .week-head {
+    padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .week-title { display: flex; align-items: baseline; gap: 12px; }
+  .week-title .wn { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+  .week-title .dr { font-size: 14px; color: var(--sub); font-weight: 500; }
+  .week-badge { font-size: 12px; color: var(--sub); background: var(--bg); padding: 5px 12px; border-radius: 980px; font-weight: 600; }
+  .week-badge.cur { background: var(--blue); color: #fff; }
+
+  .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: rgba(0,0,0,0.05); }
+  .day {
+    background: var(--card); padding: 14px 12px; min-height: 180px; position: relative;
+    display: flex; flex-direction: column; gap: 8px; transition: background .2s ease;
+  }
+  .day:hover { background: #fafafa; }
+  .day.weekend { background: var(--weekend); }
+  .day.today { background: linear-gradient(180deg, #eef6ff 0%, #fff 60%); box-shadow: inset 0 2px 0 var(--today); z-index: 1; }
+  .day-head { display: flex; align-items: baseline; justify-content: space-between; }
+  .day-date { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .day-wd { font-size: 11px; color: var(--sub); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .day.today .day-wd { color: var(--today); }
+  .day.fest .day-wd { color: var(--fest); }
+  .fest-tag { font-size: 10px; color: #fff; background: var(--fest); padding: 2px 6px; border-radius: 4px; font-weight: 600; display: inline-block; margin-top: 2px; align-self: flex-start; }
+
+  .meal { display: flex; align-items: flex-start; gap: 6px; font-size: 12px; line-height: 1.35; }
+  .meal .dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .meal.bf .dot { background: var(--bf); }
+  .meal.ln .dot { background: var(--ln); }
+  .meal.dn .dot { background: var(--dn); }
+  .meal .txt { color: #424245; font-weight: 500; }
+  .meal .em { margin-right: 2px; }
+
+  .day.other-month { opacity: 0.35; background: var(--card); }
+  .day.other-month .day-date { color: var(--sub); }
+
+  /* ===== Legend ===== */
+  .legend { max-width: 1180px; margin: 0 auto; padding: 0 24px 8px; display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--sub); font-weight: 500; }
+  .legend-item .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* ===== Footer ===== */
+  footer { max-width: 1180px; margin: 0 auto; padding: 30px 24px 50px; text-align: center; color: var(--sub); font-size: 12px; }
+  footer .heart { color: var(--ln); }
+
+  @media (max-width: 900px) {
+    .days { grid-template-columns: repeat(7, minmax(120px, 1fr)); overflow-x: auto; }
+    .days-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .stat .num { font-size: 22px; }
+  }
+  @media (max-width: 600px) {
+    .header-inner { padding: 12px 16px; }
+    .brand h1 { font-size: 20px; }
+    .brand .tag { display: none; }
+    .month-label { min-width: 110px; font-size: 15px; }
+    .chips, .stats, main, .legend, footer { padding-left: 16px; padding-right: 16px; }
+    .days { grid-template-columns: repeat(7, minmax(110px, 1fr)); }
+    .day { min-height: 160px; padding: 10px 8px; }
+    .day-date { font-size: 15px; }
+    .meal { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <h1>食历</h1>
+      <span class="tag">一年菜单规划</span>
+    </div>
+    <div class="month-nav">
+      <button id="prevMonth" aria-label="上一月">‹</button>
+      <span class="month-label" id="monthLabel">2026年1月</span>
+      <button id="nextMonth" aria-label="下一月">›</button>
+      <button class="today-btn" id="todayBtn">回到今天</button>
+    </div>
+  </div>
+</header>
+
+<div class="chips" id="chips"></div>
+
+<div class="stats" id="stats"></div>
+
+<div class="legend">
+  <div class="legend-item"><span class="dot" style="background:var(--bf)"></span>早餐</div>
+  <div class="legend-item"><span class="dot" style="background:var(--ln)"></span>午餐</div>
+  <div class="legend-item"><span class="dot" style="background:var(--dn)"></span>晚餐</div>
+  <div class="legend-item"><span class="dot" style="background:var(--fest)"></span>节日特餐</div>
+  <div class="legend-item"><span class="dot" style="background:var(--today)"></span>今天</div>
+</div>
+
+<main id="main"></main>
+
+<footer>
+  食历 · 四季三餐 · 一年规划 &nbsp;|&nbsp; 用心过好每一餐 <span class="heart">♥</span>
+</footer>
+
+<script>
+const YEAR = 2026;
+const WD = ['周日','周一','周二','周三','周四','周五','周六'];
+
+/* ===== 菜名库（按季节） ===== */
+const SEASONS = {
+  spring: { // 3-5
+    bf: ['豆浆油条','小笼包','煎饼果子','燕麦牛奶','茶叶蛋粥','春卷','青团','豌豆粥','香椿炒蛋','荠菜馄饨'],
+    ln: ['春笋炒肉丝','香椿拌豆腐','豌豆虾仁','清蒸鲈鱼','蒜蓉菠菜','韭菜炒蛋','油焖春笋','荠菜春卷','清炒时蔬','番茄牛腩'],
+    dn: ['青菜豆腐羹','凉拌香椿','菠菜猪肝汤','清炒豆苗','莲藕排骨汤','蒜薹炒肉','上汤娃娃菜','蘑菇鸡汤']
+  },
+  summer: { // 6-8
+    bf: ['绿豆粥','凉皮','冰豆浆','荷叶饼','三明治','酸奶水果','西瓜汁','小米粥','鸡蛋灌饼','肠粉'],
+    ln: ['凉拌黄瓜','番茄炒蛋','清蒸鲈鱼','苦瓜炒肉','鱼香茄子','丝瓜蛋汤','酸辣土豆丝','蒜蓉空心菜','白灼虾','冬瓜薏米汤'],
+    dn: ['绿豆百合汤','凉拌木耳','皮蛋豆腐','酸梅汤','清炒丝瓜','荷叶蒸饭','冰糖银耳','凉拌三丝']
+  },
+  autumn: { // 9-11
+    bf: ['南瓜粥','红薯饭','桂花糕','银耳羹','蟹黄包','栗子粥','苹果燕麦','山药粥','酒酿圆子','芝麻糊'],
+    ln: ['板栗烧鸡','清蒸大闸蟹','莲藕排骨','秋葵炒蛋','山药炖鸭','红薯粉蒸肉','桂花糯米藕','南瓜焖饭','西芹百合','萝卜牛腩'],
+    dn: ['银耳莲子羹','蒸南瓜','炒莲藕片','板栗鸡汤','桂花酒酿','清炒山药','红枣小米粥','莲藕汤']
+  },
+  winter: { // 12-2
+    bf: ['热豆浆','羊肉汤面','馄饨汤','腊八粥','姜枣茶','烤红薯','汤包','牛肉面','胡辣汤','小米南瓜粥'],
+    ln: ['白菜炖豆腐','萝卜羊肉','酸菜鱼','红烧肉','土豆牛肉','小鸡炖蘑菇','猪肉炖粉条','白菜猪肉','铁锅炖','酱骨架'],
+    dn: ['萝卜排骨汤','白菜粉丝','热粥','羊肉萝卜汤','酸菜白肉','炖大鹅','白菜豆腐锅','红枣枸杞汤']
+  }
+};
+
+/* ===== 节日特餐 ===== */
+const FESTIVALS = {
+  '1-1':  { name: '元旦', bf: '桂花年糕', ln: '团圆火锅', dn: '芝麻汤圆' },
+  '2-17': { name: '春节', bf: '饺子·年糕', ln: '年夜大餐', dn: '守岁汤圆' },
+  '3-5':  { name: '惊蛰', bf: '梨水粥', ln: '春笋炒肉', dn: '润肺银耳羹' },
+  '4-5':  { name: '清明', bf: '青团', ln: '清明螺蛳', dn: '艾草粿' },
+  '5-31': { name: '端午', bf: '粽子·咸蛋', ln: '黄鳝黄瓜', dn: '艾叶粥' },
+  '6-19': { name: '端午', bf: '粽子·咸蛋', ln: '五黄宴', dn: '艾叶蛋' },
+  '9-25': { name: '中秋', bf: '月饼·柚子', ln: '团圆大餐', dn: '桂花酒' },
+  '10-19':{ name: '重阳', bf: '重阳糕', ln: '菊花鱼', dn: '茱萸羊肉汤' },
+  '12-22':{ name: '冬至', bf: '饺子·羊肉汤', ln: '冬至团圆', dn: '赤豆粥' },
+  '12-31':{ name: '岁末', bf: '腊八粥', ln: '辞岁宴', dn: '守岁饺子' }
+};
+
+/* ===== 食物 emoji ===== */
+const EMOJI = {
+  '豆浆':'🥛','粥':'粥','饺子':'🥟','粽子':'🍙','汤圆':'🫕','月饼':'🥮','年糕':'🍡',
+  '鱼':'🐟','虾':'🦐','蟹':'🦀','鸡':'🍗','鸭':'🦆','羊':'🍖','肉':'🥩','蛋':'🥚',
+  '面':'🍜','饭':'🍚','包':'🥟','饼':'🥞','汤':'🍲','炒':'🥘','炖':'🍲','蒸':'♨️',
+  '豆腐':'🧈','瓜':'🥒','笋':'🌿','藕':'🪷','菇':'🍄','薯':'🍠','栗':'🌰','枣':'🟥'
+};
+function emojiFor(name) {
+  for (const k in EMOJI) if (name.includes(k)) return EMOJI[k];
+  return '🍽️';
+}
+
+/* ===== 季节判断 ===== */
+function seasonOf(month) {
+  if (month >= 3 && month <= 5) return 'spring';
+  if (month >= 6 && month <= 8) return 'summer';
+  if (month >= 9 && month <= 11) return 'autumn';
+  return 'winter';
+}
+
+/* ===== 确定性随机（保证同一日期菜单不变） ===== */
+function seeded(seed) {
+  let x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+function pick(arr, seed) {
+  return arr[Math.floor(seeded(seed) * arr.length)];
+}
+
+/* ===== 生成某天的菜单 ===== */
+function menuFor(year, month, day) {
+  const key = `${month}-${day}`;
+  if (FESTIVALS[key]) {
+    const f = FESTIVALS[key];
+    return { festival: f.name, bf: f.bf, ln: f.ln, dn: f.dn };
+  }
+  const s = seasonOf(month);
+  const seed = year * 1000 + month * 50 + day;
+  const lib = SEASONS[s];
+  return {
+    bf: pick(lib.bf, seed),
+    ln: pick(lib.ln, seed + 0.3),
+    dn: pick(lib.dn, seed + 0.6)
+  };
+}
+
+/* ===== 按周分组（周一到周日） ===== */
+function weeksOfMonth(year, month) {
+  const first = new Date(year, month - 1, 1);
+  const last = new Date(year, month, 0);
+  const days = last.getDate();
+  const weeks = [];
+  let week = [];
+  // 前面补上月末尾对齐周一
+  const lead = (first.getDay() + 6) % 7;
+  for (let i = 0; i < lead; i++) {
+    const d = new Date(year, month - 1, 1 - (lead - i));
+    week.push({ day: d.getDate(), month: d.getMonth() + 1, year: d.getFullYear(), other: true });
+  }
+  for (let d = 1; d <= days; d++) {
+    week.push({ day: d, month, year, other: false });
+    if (week.length === 7) { weeks.push(week); week = []; }
+  }
+  // 后面补下月开头对齐周日
+  if (week.length > 0) {
+    let nx = 1;
+    while (week.length < 7) {
+      const d = new Date(year, month, nx++);
+      week.push({ day: d.getDate(), month: d.getMonth() + 1, year: d.getFullYear(), other: true });
+    }
+    weeks.push(week);
+  }
+  return weeks;
+}
+
+/* ===== 渲染 ===== */
+const today = new Date();
+let curYear = YEAR;
+let curMonth = 1;
+
+function isToday(y, m, d) {
+  return y === today.getFullYear() && m === today.getMonth() + 1 && d === today.getDate();
+}
+
+function render() {
+  document.getElementById('monthLabel').textContent = `${curYear}年${curMonth}月`;
+  const weeks = weeksOfMonth(curYear, curMonth);
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  // 统计
+  const realDays = weeks.flat().filter(d => !d.other).length;
+  const festCount = weeks.flat().filter(d => !d.other && FESTIVALS[`${d.month}-${d.day}`]).length;
+  const todayInMonth = weeks.flat().some(d => !d.other && isToday(d.year, d.month, d.day));
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="num">${weeks.length}<small> 周</small></div><div class="lbl">本月周数</div></div>
+    <div class="stat"><div class="num">${realDays}<small> 天</small></div><div class="lbl">规划天数</div></div>
+    <div class="stat"><div class="num">${realDays * 3}<small> 餐</small></div><div class="lbl">三餐总数</div></div>
+    <div class="stat"><div class="num" style="color:var(--fest)">${festCount}</div><div class="lbl">节日特餐</div></div>
+  `;
+
+  // 月份 chips
+  const chips = document.getElementById('chips');
+  chips.innerHTML = '';
+  for (let m = 1; m <= 12; m++) {
+    const hasFest = Object.keys(FESTIVALS).some(k => parseInt(k.split('-')[0]) === m);
+    const c = document.createElement('div');
+    c.className = 'chip' + (m === curMonth ? ' active' : '') + (hasFest ? ' has-fest' : '');
+    c.textContent = `${m}月`;
+    c.onclick = () => { curMonth = m; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    chips.appendChild(c);
+  }
+
+  // 周卡片
+  const todayWeekIdx = weeks.findIndex(w => w.some(d => !d.other && isToday(d.year, d.month, d.day)));
+  weeks.forEach((week, wi) => {
+    const real = week.filter(d => !d.other);
+    const firstReal = real[0], lastReal = real[real.length - 1];
+    const range = `${firstReal.month}月${firstReal.day}日 – ${lastReal.month}月${lastReal.day}日`;
+    const isCur = wi === todayWeekIdx;
+
+    const card = document.createElement('section');
+    card.className = 'week';
+    card.style.animationDelay = (wi * 0.06) + 's';
+    card.innerHTML = `
+      <div class="week-head">
+        <div class="week-title">
+          <span class="wn">第 ${wi + 1} 周</span>
+          <span class="dr">${range}</span>
+        </div>
+        <span class="week-badge${isCur ? ' cur' : ''}">${isCur ? '本周' : '7天'}</span>
+      </div>
+      <div class="days"></div>
+    `;
+    const daysEl = card.querySelector('.days');
+    week.forEach(d => {
+      const wd = new Date(d.year, d.month - 1, d.day).getDay();
+      const isWeekend = wd === 0 || wd === 6;
+      const isTodayDay = !d.other && isToday(d.year, d.month, d.day);
+      const menu = d.other ? null : menuFor(d.year, d.month, d.day);
+      const fest = menu && menu.festival;
+      const dayDiv = document.createElement('div');
+      dayDiv.className = 'day' + (isWeekend ? ' weekend' : '') + (isTodayDay ? ' today' : '') + (d.other ? ' other-month' : '') + (fest ? ' fest' : '');
+      let mealsHtml = '';
+      if (menu) {
+        mealsHtml = `
+          <div class="meal bf"><span class="dot"></span><span class="txt"><span class="em">${emojiFor(menu.bf)}</span>${menu.bf}</span></div>
+          <div class="meal ln"><span class="dot"></span><span class="txt"><span class="em">${emojiFor(menu.ln)}</span>${menu.ln}</span></div>
+          <div class="meal dn"><span class="dot"></span><span class="txt"><span class="em">${emojiFor(menu.dn)}</span>${menu.dn}</span></div>
+        `;
+      } else {
+        mealsHtml = '<div class="meal"><span class="txt" style="color:var(--sub)">—</span></div>';
+      }
+      dayDiv.innerHTML = `
+        <div class="day-head">
+          <span class="day-date">${d.day}</span>
+          <span class="day-wd">${WD[wd]}</span>
+        </div>
+        ${fest ? `<span class="fest-tag">${fest}</span>` : ''}
+        ${mealsHtml}
+      `;
+      daysEl.appendChild(dayDiv);
+    });
+    main.appendChild(card);
+  });
+}
+
+document.getElementById('prevMonth').onclick = () => {
+  curMonth--; if (curMonth < 1) { curMonth = 12; curYear--; }
+  render();
+};
+document.getElementById('nextMonth').onclick = () => {
+  curMonth++; if (curMonth > 12) { curMonth = 1; curYear++; }
+  render();
+};
+document.getElementById('todayBtn').onclick = () => {
+  curYear = today.getFullYear(); curMonth = today.getMonth() + 1;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+render();
+</script>
+</body>
+</html>
