@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>软木板 · 白板墙</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, sans-serif; user-select: none; }
+
+  /* ===== 软木板墙面 ===== */
+  #board {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(139,90,43,0.15), transparent 60%),
+      radial-gradient(ellipse at 80% 70%, rgba(101,67,33,0.18), transparent 55%),
+      radial-gradient(ellipse at 50% 50%, #c9a06a, #a87a4a 70%, #8b6239);
+    overflow: hidden;
+  }
+  /* 软木颗粒纹理 */
+  #board::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
+    background-image:
+      radial-gradient(circle at 13% 27%, rgba(80,50,20,0.25) 0, transparent 1.5px),
+      radial-gradient(circle at 67% 81%, rgba(80,50,20,0.2) 0, transparent 1.2px),
+      radial-gradient(circle at 41% 53%, rgba(180,130,80,0.3) 0, transparent 1px),
+      radial-gradient(circle at 89% 11%, rgba(80,50,20,0.22) 0, transparent 1.3px),
+      radial-gradient(circle at 23% 91%, rgba(180,130,80,0.25) 0, transparent 1.1px),
+      radial-gradient(circle at 77% 37%, rgba(80,50,20,0.2) 0, transparent 1.4px);
+    background-size: 37px 41px, 53px 47px, 29px 31px, 43px 37px, 47px 43px, 31px 29px;
+  }
+  #board::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.06;
+    background-image: repeating-linear-gradient(42deg, #000 0 1px, transparent 1px 4px);
+  }
+
+  /* ===== 工具栏 ===== */
+  .toolbar {
+    position: fixed; top: 16px; left: 16px; z-index: 9999;
+    background: rgba(40,28,16,0.92); backdrop-filter: blur(10px);
+    border-radius: 14px; padding: 8px; display: flex; gap: 6px; align-items: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .tool {
+    width: 42px; height: 42px; border: none; border-radius: 10px; cursor: pointer;
+    background: rgba(255,255,255,0.08); color: #f0e6d2; font-size: 20px;
+    display: flex; align-items: center; justify-content: center; position: relative;
+    transition: all .15s ease;
+  }
+  .tool:hover { background: rgba(255,255,255,0.2); transform: translateY(-1px); }
+  .tool:active { transform: translateY(0) scale(0.95); }
+  .tool .tip {
+    position: absolute; left: 50%; bottom: -32px; transform: translateX(-50%);
+    background: rgba(0,0,0,0.85); color: #fff; font-size: 11px; padding: 3px 8px;
+    border-radius: 5px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s;
+  }
+  .tool:hover .tip { opacity: 1; }
+  .sep { width: 1px; height: 26px; background: rgba(255,255,255,0.15); margin: 0 2px; }
+
+  /* 颜色选择气泡 */
+  .color-pop {
+    position: fixed; top: 70px; left: 16px; z-index: 9999;
+    background: rgba(40,28,16,0.95); border-radius: 12px; padding: 10px;
+    display: none; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .color-pop.show { display: flex; }
+  .swatch {
+    width: 34px; height: 34px; border-radius: 8px; cursor: pointer; border: 2px solid rgba(255,255,255,0.2);
+    transition: transform .15s; position: relative;
+  }
+  .swatch:hover { transform: scale(1.12); border-color: #fff; }
+
+  /* ===== 卡片通用 ===== */
+  .card {
+    position: absolute; cursor: grab;
+    transition: box-shadow .2s ease;
+    will-change: transform;
+  }
+  .card.dragging { cursor: grabbing; z-index: 99999 !important; }
+  .card .pin {
+    position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+    width: 18px; height: 18px; border-radius: 50%; z-index: 2;
+    background: radial-gradient(circle at 35% 35%, #fff 0%, #e8e8e8 20%, var(--pin-color, #d63031) 55%, var(--pin-dark, #a71d1d) 100%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.45), inset 0 -1px 2px rgba(0,0,0,0.3);
+  }
+  .card .pin::after {
+    content: ""; position: absolute; top: 6px; left: 7px; width: 4px; height: 4px;
+    border-radius: 50%; background: rgba(255,255,255,0.6); filter: blur(0.5px);
+  }
+
+  /* 卡片操作按钮 */
+  .card .actions {
+    position: absolute; top: 6px; right: 6px; display: flex; gap: 4px;
+    opacity: 0; transition: opacity .15s; z-index: 3;
+  }
+  .card:hover .actions { opacity: 1; }
+  .card .act {
+    width: 24px; height: 24px; border: none; border-radius: 6px; cursor: pointer;
+    background: rgba(0,0,0,0.45); color: #fff; font-size: 13px;
+    display: flex; align-items: center; justify-content: center; line-height: 1;
+  }
+  .card .act:hover { background: rgba(0,0,0,0.7); }
+  .card .act.del:hover { background: #e74c3c; }
+
+  /* ===== 便签 ===== */
+  .note {
+    background: var(--note-color, #fef3c7);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.12), 0 10px 20px -6px rgba(0,0,0,0.2);
+    border-radius: 2px; padding: 18px 14px 14px; min-width: 160px; max-width: 280px;
+    font-size: 15px; line-height: 1.6; color: #3a3a3a;
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.25), transparent 30%);
+  }
+  .note .text { white-space: pre-wrap; word-break: break-word; cursor: text; min-height: 20px; }
+  .note .text[contenteditable="true"] { outline: 2px dashed rgba(0,0,0,0.3); outline-offset: 2px; border-radius: 2px; }
+  .note .date { font-size: 10px; color: rgba(0,0,0,0.35); margin-top: 8px; text-align: right; }
+
+  /* ===== 照片 ===== */
+  .photo {
+    background: #fff; padding: 10px 10px 32px; border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15), 0 12px 24px -6px rgba(0,0,0,0.25);
+  }
+  .photo img { display: block; max-width: 240px; max-height: 240px; border-radius: 1px; pointer-events: none; }
+  .photo .caption {
+    font-size: 12px; color: #666; margin-top: 8px; text-align: center; font-style: italic;
+    min-height: 14px; cursor: text;
+  }
+  .photo .caption[contenteditable="true"] { outline: 1px dashed #999; outline-offset: 2px; }
+
+  /* ===== 待办 ===== */
+  .todo {
+    background: #f8f9fa; border-radius: 4px; padding: 18px 14px 12px; min-width: 200px; max-width: 260px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.12), 0 10px 20px -6px rgba(0,0,0,0.2);
+    background-image: linear-gradient(#e85d75 0 28px, #f8f9fa 28px);
+  }
+  .todo h3 { font-size: 14px; color: #fff; margin-bottom: 10px; font-weight: 600; }
+  .todo .items { display: flex; flex-direction: column; gap: 6px; }
+  .todo .item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333; }
+  .todo .item input { width: 16px; height: 16px; cursor: pointer; accent-color: #e85d75; }
+  .todo .item span { flex: 1; cursor: pointer; }
+  .todo .item.done span { text-decoration: line-through; color: #aaa; }
+  .todo .add-item {
+    font-size: 12px; color: #999; cursor: pointer; margin-top: 6px; padding: 3px 0;
+  }
+  .todo .add-item:hover { color: #e85d75; }
+
+  /* ===== 空状态提示 ===== */
+  .hint {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: rgba(255,240,220,0.5); font-size: 18px; text-align: center; pointer-events: none;
+    line-height: 1.8;
+  }
+  .hint .big { font-size: 28px; margin-bottom: 8px; opacity: 0.7; }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: rgba(40,28,16,0.95); color: #f0e6d2; padding: 10px 20px; border-radius: 10px;
+    font-size: 13px; opacity: 0; transition: all .25s ease; z-index: 99999; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== 照片输入弹窗 ===== */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100000;
+    display: none; align-items: center; justify-content: center;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 14px; padding: 24px; width: 360px; max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .modal h3 { font-size: 18px; margin-bottom: 16px; }
+  .modal input, .modal textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px;
+    font-size: 14px; margin-bottom: 12px; font-family: inherit;
+  }
+  .modal textarea { resize: vertical; min-height: 60px; }
+  .modal .btns { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal button {
+    padding: 8px 18px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-family: inherit;
+  }
+  .modal .cancel { background: #eee; color: #555; }
+  .modal .ok { background: #d63031; color: #fff; }
+  .modal .ok:hover { background: #c0392b; }
+  .modal .cancel:hover { background: #ddd; }
+  .sample-urls { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .sample-urls img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid transparent; }
+  .sample-urls img:hover { border-color: #d63031; }
+
+  @media (max-width: 600px) {
+    .toolbar { top: 10px; left: 10px; padding: 6px; gap: 4px; }
+    .tool { width: 38px; height: 38px; font-size: 18px; }
+    .note { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="board"></div>
+
+<div class="hint" id="hint">
+  <div class="big">📌 软木板</div>
+  点击左上角工具，粘贴便签 / 照片 / 待办<br>
+  拖拽移动 · 双击编辑 · 悬停删除
+</div>
+
+<div class="toolbar">
+  <button class="tool" id="btnNote">📝<span class="tip">便签</span></button>
+  <button class="tool" id="btnPhoto">🖼️<span class="tip">照片</span></button>
+  <button class="tool" id="btnTodo">✅<span class="tip">待办</span></button>
+  <div class="sep"></div>
+  <button class="tool" id="btnShuffle">🔀<span class="tip">整理</span></button>
+  <button class="tool" id="btnClear">🗑️<span class="tip">清空</span></button>
+</div>
+
+<div class="color-pop" id="colorPop"></div>
+
+<div class="modal-bg" id="photoModal">
+  <div class="modal">
+    <h3>粘贴照片</h3>
+    <div class="sample-urls" id="sampleUrls"></div>
+    <input type="text" id="photoUrl" placeholder="输入图片网址 https://...">
+    <textarea id="photoCaption" placeholder="照片说明（可选）"></textarea>
+    <div class="btns">
+      <button class="cancel" id="photoCancel">取消</button>
+      <button class="ok" id="photoOk">粘贴</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE = 'corkboard_v1';
+const NOTE_COLORS = [
+  { c: '#fef3c7', d: '#fde68a' }, // 黄
+  { c: '#fbcfe8', d: '#f9a8d4' }, // 粉
+  { c: '#bfdbfe', d: '#93c5fd' }, // 蓝
+  { c: '#bbf7d0', d: '#86efac' }, // 绿
+  { c: '#ddd6fe', d: '#c4b5fd' }, // 紫
+  { c: '#fed7aa', d: '#fdba74' }, // 橙
+];
+const PIN_COLORS = ['#d63031','#e84393','#6c5ce7','#0984e3','#00b894','#fdcb6c','#e17055','#00cec9'];
+const SAMPLE_PHOTOS = [
+  'https://picsum.photos/seed/cork1/300/300',
+  'https://picsum.photos/seed/cork2/300/300',
+  'https://picsum.photos/seed/cork3/300/300',
+  'https://picsum.photos/seed/cork4/300/300',
+  'https://picsum.photos/seed/cork5/300/300',
+  'https://picsum.photos/seed/cork6/300/300',
+];
+
+let cards = [];
+let zMax = 1;
+const board = document.getElementById('board');
+const hint = document.getElementById('hint');
+
+/* ===== 持久化 ===== */
+function save() {
+  localStorage.setItem(STORAGE, JSON.stringify({ cards, zMax }));
+}
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STORAGE));
+    if (d && d.cards) { cards = d.cards; zMax = d.zMax || 1; }
+  } catch(e) {}
+}
+
+/* ===== Toast ===== */
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+/* ===== 工具函数 ===== */
+const uid = () => Math.random().toString(36).slice(2, 9);
+const rnd = (a, b) => a + Math.random() * (b - a);
+const rndInt = (a, b) => Math.floor(rnd(a, b + 1));
+
+/* ===== 渲染卡片 ===== */
+function renderAll() {
+  board.querySelectorAll('.card').forEach(el => el.remove());
+  cards.forEach(renderCard);
+  hint.style.display = cards.length ? 'none' : 'block';
+}
+
+function renderCard(card) {
+  const el = document.createElement('div');
+  el.className = 'card ' + card.type;
+  el.dataset.id = card.id;
+  el.style.left = card.x + 'px';
+  el.style.top = card.y + 'px';
+  el.style.zIndex = card.z || 1;
+  el.style.transform = `rotate(${card.rotate}deg)`;
+
+  // 图钉
+  const pin = document.createElement('div');
+  pin.className = 'pin';
+  pin.style.setProperty('--pin-color', card.pinColor || '#d63031');
+  el.appendChild(pin);
+
+  // 内容
+  if (card.type === 'note') {
+    el.style.setProperty('--note-color', card.color);
+    el.classList.add('note');
+    const text = document.createElement('div');
+    text.className = 'text';
+    text.textContent = card.text || '双击编辑...';
+    el.appendChild(text);
+    const date = document.createElement('div');
+    date.className = 'date';
+    date.textContent = card.date || '';
+    el.appendChild(date);
+    text.addEventListener('dblclick', () => editNote(text, card));
+  } else if (card.type === 'photo') {
+    el.classList.add('photo');
+    const img = document.createElement('img');
+    img.src = card.url;
+    img.onerror = () => { img.style.display = 'none'; };
+    el.appendChild(img);
+    const cap = document.createElement('div');
+    cap.className = 'caption';
+    cap.textContent = card.caption || '';
+    el.appendChild(cap);
+    cap.addEventListener('dblclick', () => editCaption(cap, card));
+  } else if (card.type === 'todo') {
+    el.classList.add('todo');
+    const h = document.createElement('h3');
+    h.textContent = card.title || '待办清单';
+    el.appendChild(h);
+    h.addEventListener('dblclick', () => editNote(h, card, 'title'));
+    const items = document.createElement('div');
+    items.className = 'items';
+    el.appendChild(items);
+    (card.items || []).forEach((it, i) => {
+      const row = document.createElement('div');
+      row.className = 'item' + (it.done ? ' done' : '');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = it.done;
+      cb.addEventListener('change', () => {
+        card.items[i].done = cb.checked;
+        row.classList.toggle('done', cb.checked);
+        save();
+      });
+      const sp = document.createElement('span');
+      sp.textContent = it.text;
+      sp.addEventListener('dblclick', () => editNote(sp, card.items[i], 'text'));
+      row.appendChild(cb); row.appendChild(sp);
+      items.appendChild(row);
+    });
+    const addBtn = document.createElement('div');
+    addBtn.className = 'add-item';
+    addBtn.textContent = '+ 添加项';
+    addBtn.addEventListener('click', () => {
+      const text = prompt('待办内容：');
+      if (text && text.trim()) {
+        card.items.push({ text: text.trim(), done: false });
+        save(); renderAll();
+      }
+    });
+    el.appendChild(addBtn);
+  }
+
+  // 操作按钮
+  const actions = document.createElement('div');
+  actions.className = 'actions';
+  const topBtn = document.createElement('button');
+  topBtn.className = 'act'; topBtn.textContent = '⤒'; topBtn.title = '置顶';
+  topBtn.addEventListener('click', e => { e.stopPropagation(); card.z = ++zMax; el.style.zIndex = card.z; save(); });
+  const rotBtn = document.createElement('button');
+  rotBtn.className = 'act'; rotBtn.textContent = '⟳'; rotBtn.title = '旋转';
+  rotBtn.addEventListener('click', e => { e.stopPropagation(); card.rotate = rnd(-12, 12); el.style.transform = `rotate(${card.rotate}deg)`; save(); });
+  const delBtn = document.createElement('button');
+  delBtn.className = 'act del'; delBtn.textContent = '✕'; delBtn.title = '删除';
+  delBtn.addEventListener('click', e => { e.stopPropagation(); cards = cards.filter(c => c.id !== card.id); el.remove(); save(); hint.style.display = cards.length ? 'none' : 'block'; toast('已取下'); });
+  actions.appendChild(topBtn); actions.appendChild(rotBtn); actions.appendChild(delBtn);
+  el.appendChild(actions);
+
+  // 拖拽
+  bindDrag(el, card);
+
+  board.appendChild(el);
+}
+
+/* ===== 编辑 ===== */
+function editNote(el, card, field = 'text') {
+  el.contentEditable = 'true';
+  el.focus();
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges(); sel.addRange(range);
+  const finish = () => {
+    el.contentEditable = 'false';
+    card[field] = el.textContent;
+    save();
+  };
+  el.addEventListener('blur', finish, { once: true });
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && card.type !== 'note') { e.preventDefault(); el.blur(); }
+    if (e.key === 'Escape') { el.blur(); }
+  });
+}
+function editCaption(el, card) {
+  el.contentEditable = 'true'; el.focus();
+  const finish = () => { el.contentEditable = 'false'; card.caption = el.textContent; save(); };
+  el.addEventListener('blur', finish, { once: true });
+}
+
+/* ===== 拖拽 ===== */
+function bindDrag(el, card) {
+  let sx, sy, ox, oy, dragging = false;
+  const start = (cx, cy, ev) => {
+    if (ev && ev.target && (ev.target.closest('.actions') || ev.target.closest('input') || ev.target.closest('.add-item'))) return;
+    dragging = true;
+    sx = cx; sy = cy; ox = card.x; oy = card.y;
+    el.classList.add('dragging');
+    card.z = ++zMax; el.style.zIndex = card.z;
+  };
+  const move = (cx, cy) => {
+    if (!dragging) return;
+    card.x = ox + (cx - sx);
+    card.y = oy + (cy - sy);
+    el.style.left = card.x + 'px';
+    el.style.top = card.y + 'px';
+  };
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
+    el.classList.remove('dragging');
+    save();
+  };
+  el.addEventListener('mousedown', e => { e.preventDefault(); start(e.clientX, e.clientY, e); });
+  document.addEventListener('mousemove', e => move(e.clientX, e.clientY));
+  document.addEventListener('mouseup', end);
+  el.addEventListener('touchstart', e => { if (e.touches.length === 1) start(e.touches[0].clientX, e.touches[0].clientY, e); }, { passive: true });
+  document.addEventListener('touchmove', e => { if (e.touches.length === 1) move(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+  document.addEventListener('touchend', end);
+}
+
+/* ===== 添加卡片 ===== */
+function addNote(colorIdx = 0) {
+  const col = NOTE_COLORS[colorIdx % NOTE_COLORS.length];
+  const pin = PIN_COLORS[rndInt(0, PIN_COLORS.length - 1)];
+  const card = {
+    id: uid(), type: 'note',
+    x: rnd(120, window.innerWidth - 320),
+    y: rnd(80, window.innerHeight - 200),
+    rotate: rnd(-8, 8), z: ++zMax,
+    color: col.c, pinColor: pin,
+    text: '在这里写点什么...', date: new Date().toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
+  };
+  cards.push(card); renderCard(card); save();
+  hint.style.display = 'none';
+}
+
+function addPhoto(url, caption = '') {
+  const pin = PIN_COLORS[rndInt(0, PIN_COLORS.length - 1)];
+  const card = {
+    id: uid(), type: 'photo',
+    x: rnd(120, window.innerWidth - 320),
+    y: rnd(80, window.innerHeight - 320),
+    rotate: rnd(-6, 6), z: ++zMax,
+    url, caption, pinColor: pin
+  };
+  cards.push(card); renderCard(card); save();
+  hint.style.display = 'none';
+}
+
+function addTodo() {
+  const pin = PIN_COLORS[rndInt(0, PIN_COLORS.length - 1)];
+  const card = {
+    id: uid(), type: 'todo',
+    x: rnd(120, window.innerWidth - 300),
+    y: rnd(80, window.innerHeight - 280),
+    rotate: rnd(-5, 5), z: ++zMax,
+    title: '我的清单', pinColor: pin,
+    items: [
+      { text: '买牛奶', done: false },
+      { text: '回邮件', done: false },
+      { text: '看书 30 分钟', done: true }
+    ]
+  };
+  cards.push(card); renderCard(card); save();
+  hint.style.display = 'none';
+}
+
+/* ===== 颜色选择 ===== */
+const colorPop = document.getElementById('colorPop');
+NOTE_COLORS.forEach((col, i) => {
+  const s = document.createElement('div');
+  s.className = 'swatch'; s.style.background = col.c;
+  s.addEventListener('click', () => { addNote(i); colorPop.classList.remove('show'); });
+  colorPop.appendChild(s);
+});
+document.getElementById('btnNote').addEventListener('click', e => {
+  e.stopPropagation();
+  colorPop.classList.toggle('show');
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.color-pop') && !e.target.closest('#btnNote')) colorPop.classList.remove('show');
+});
+
+/* ===== 照片弹窗 ===== */
+const photoModal = document.getElementById('photoModal');
+const photoUrl = document.getElementById('photoUrl');
+const photoCaption = document.getElementById('photoCaption');
+const sampleUrls = document.getElementById('sampleUrls');
+SAMPLE_PHOTOS.forEach(u => {
+  const img = document.createElement('img');
+  img.src = u; img.title = '点击使用';
+  img.addEventListener('click', () => { photoUrl.value = u; });
+  sampleUrls.appendChild(img);
+});
+document.getElementById('btnPhoto').addEventListener('click', () => {
+  photoUrl.value = ''; photoCaption.value = '';
+  photoModal.classList.add('show');
+});
+document.getElementById('photoCancel').addEventListener('click', () => photoModal.classList.remove('show'));
+document.getElementById('photoOk').addEventListener('click', () => {
+  const u = photoUrl.value.trim();
+  if (!u) { toast('请输入图片网址'); return; }
+  addPhoto(u, photoCaption.value.trim());
+  photoModal.classList.remove('show');
+  toast('照片已粘贴');
+});
+photoModal.addEventListener('click', e => { if (e.target === photoModal) photoModal.classList.remove('show'); });
+
+/* ===== 待办 ===== */
+document.getElementById('btnTodo').addEventListener('click', addTodo);
+
+/* ===== 整理 / 清空 ===== */
+document.getElementById('btnShuffle').addEventListener('click', () => {
+  const cols = Math.min(4, Math.floor((window.innerWidth - 80) / 220));
+  const cw = 220, ch = 200, gap = 24;
+  const startX = 60, startY = 80;
+  cards.forEach((c, i) => {
+    const col = i % cols, row = Math.floor(i / cols);
+    c.x = startX + col * (cw + gap) + rnd(-10, 10);
+    c.y = startY + row * (ch + gap) + rnd(-10, 10);
+    c.rotate = rnd(-4, 4);
+  });
+  renderAll(); save(); toast('已整理');
+});
+
+document.getElementById('btnClear').addEventListener('click', () => {
+  if (!cards.length) return;
+  if (confirm('确定清空软木板吗？')) {
+    cards = []; zMax = 1; save(); renderAll(); toast('已清空');
+  }
+});
+
+/* ===== 初始化 ===== */
+load();
+if (!cards.length) {
+  // 预设几张卡片
+  addNote(0); cards[cards.length-1].text = '欢迎使用软木板！\n双击可编辑文字';
+  addNote(1); cards[cards.length-1].text = '拖拽卡片移动位置\n悬停可置顶/旋转/删除';
+  addPhoto(SAMPLE_PHOTOS[0], '美好瞬间');
+  addTodo();
+  save();
+}
+renderAll();
+</script>
+</body>
+</html>
