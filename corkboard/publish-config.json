@@ -1,6 +1,6 @@
 {
   "workName": "软木板·白板墙",
-  "introduction": "拟物化软木板白板墙，可粘贴便签、照片、待办清单，支持拖拽、旋转、置顶、编辑、删除，localStorage 持久化",
+  "introduction": "拟物软木板白板墙，粘贴便签照片待办，可拖拽旋转删除",
   "gitUrl": "https://github.com/QSC707/calendar-2027-july.git",
   "gitBranch": "master",
   "campId": "e4c24564-04f0-42f0-8980-695fee23dcc3",
