@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>订阅管家 · 服务订阅管理</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+:root{--bg:#0a0e14;--bg2:#0d1320;--card:#111827;--card2:#1a2332;--line:rgba(255,255,255,0.07);--line2:rgba(255,255,255,0.12);--ink:#e4e7eb;--sub:#6b7280;--dim:#4b5563;--teal:#14b8a6;--teal2:#0d9488;--cyan:#06b6d4;--amber:#f59e0b;--red:#ef4444;--green:#10b981;--purple:#8b5cf6;--pink:#ec4899}
+html,body{background:var(--bg);color:var(--ink);font-family:-apple-system,"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.5;min-height:100vh}
+body{background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(20,184,166,0.1),transparent),var(--bg)}
+header{position:sticky;top:0;z-index:100;background:rgba(10,14,20,0.82);backdrop-filter:blur(20px);border-bottom:1px solid var(--line)}
+.h-in{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--teal),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 4px 14px rgba(20,184,166,0.35)}
+.brand h1{font-size:18px;font-weight:700;letter-spacing:-0.02em}
+.brand .sub{font-size:12px;color:var(--sub)}
+.total{text-align:right}
+.total .lbl{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:0.05em}
+.total .val{font-size:22px;font-weight:700;letter-spacing:-0.02em;color:var(--teal)}
+.tabs{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;gap:4px}
+.tab{background:none;border:none;color:var(--sub);font-size:14px;font-weight:600;padding:12px 18px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:inherit}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+main{max-width:1100px;margin:0 auto;padding:24px}
+.page{display:none;animation:fade .3s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.stat:hover{transform:translateY(-2px);box-shadow:0 8px 24px -8px rgba(0,0,0,0.2)}
+.stat::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--c,var(--teal));border-radius:16px 16px 0 0}
+.stat .ico{font-size:20px;margin-bottom:8px}
+.stat .lbl{font-size:12px;color:var(--sub);font-weight:500}
+.stat .val{font-size:26px;font-weight:700;letter-spacing:-0.02em;margin-top:4px;color:var(--c,var(--ink))}
+.stat .delta{font-size:11px;margin-top:6px;color:var(--dim);font-weight:500}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}
+.card h3{font-size:15px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.card h3 .more{font-size:12px;color:var(--sub);font-weight:500}
+.subs{display:flex;flex-direction:column;gap:10px}
+.sub-item{display:flex;align-items:center;gap:14px;padding:14px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);transition:all .15s}
+.sub-item:hover{border-color:var(--line2);background:var(--card2);transform:translateX(2px)}
+.sub-item .cat-ico{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.sub-item .info{flex:1;min-width:0}
+.sub-item .info .name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub-item .info .meta{font-size:12px;color:var(--sub);margin-top:2px}
+.sub-item .price{text-align:right;flex-shrink:0}
+.sub-item .price .p{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
+.sub-item .price .c{font-size:11px;color:var(--sub)}
+.sub-item .status{padding:3px 10px;border-radius:980px;font-size:11px;font-weight:600;flex-shrink:0}
+.status.active{background:rgba(16,185,129,0.15);color:var(--green)}
+.status.expiring{background:rgba(245,158,11,0.15);color:var(--amber)}
+.status.expired{background:rgba(239,68,68,0.15);color:var(--red)}
+.status.cancelled{background:rgba(107,114,128,0.15);color:var(--sub)}
+.sub-item .del{opacity:0;background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;padding:4px;transition:all .15s}
+.sub-item:hover .del{opacity:1}
+.sub-item .del:hover{color:var(--red)}
+.form-row{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.form-row>*{flex:1;min-width:100px}
+input,select{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;color:var(--ink);font-size:14px;font-family:inherit;width:100%;transition:border .15s}
+input:focus,select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(20,184,166,0.1)}
+label{font-size:12px;color:var(--sub);font-weight:500;display:block;margin-bottom:5px}
+.btn{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn:hover{background:var(--teal2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(20,184,166,0.3)}
+.btn.full{width:100%}
+.btn.ghost{background:var(--bg2);color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--card2)}
+.empty{text-align:center;padding:40px 20px;color:var(--dim);font-size:14px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card2);border:1px solid var(--line2);color:var(--ink);padding:10px 20px;border-radius:10px;font-size:13px;opacity:0;transition:all .25s;z-index:999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.cat-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.cat-chip{background:var(--bg2);border:1px solid var(--line);border-radius:980px;padding:6px 14px;font-size:13px;font-weight:500;color:var(--sub);cursor:pointer;transition:all .15s;font-family:inherit}
+.cat-chip:hover{color:var(--ink);border-color:var(--line2)}
+.cat-chip.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+@media(max-width:768px){.stats{grid-template-columns:repeat(2,1fr)}.h-in{padding:12px 16px}main{padding:16px}.tabs{padding:0 16px}.sub-item .info .meta{display:none}}
+</style>
+</head>
+<body>
+<header>
+<div class="h-in">
+<div class="brand"><div class="logo">📋</div><div><h1>订阅管家</h1><div class="sub">服务订阅管理</div></div></div>
+<div class="total"><div class="lbl">月度支出</div><div class="val" id="monthlyTotal">¥0</div></div>
+</div>
+<div class="tabs">
+<button class="tab active" data-page="overview">总览</button>
+<button class="tab active" data-page="manage">管理</button>
+</div>
+</header>
+<main>
+<div class="page active" id="overview">
+<div class="stats" id="ovStats"></div>
+<div class="card"><h3>订阅列表 <span class="more" id="subCount">0 项</span></h3>
+<div class="cat-filter" id="catFilter"></div>
+<div class="subs" id="subList"></div>
+</div>
+</div>
+<div class="page" id="manage">
+<div class="card">
+<h3>添加订阅</h3>
+<div class="form-row">
+<div><label>服务名称</label><input type="text" id="fName" placeholder="如：Netflix"></div>
+<div><label>分类</label><select id="fCategory"></select></div>
+</div>
+<div class="form-row">
+<div><label>价格(元)</label><input type="number" id="fPrice" placeholder="0.00" min="0" step="0.01"></div>
+<div><label>计费周期</label><select id="fCycle"><option value="monthly">月付</option><option value="yearly">年付</option><option value="weekly">周付</option><option value="quarterly">季付</option></select></div>
+</div>
+<div class="form-row">
+<div><label>开始日期</label><input type="date" id="fStart"></div>
+<div><label>到期日期</label><input type="date" id="fEnd"></div>
+</div>
+<div class="form-row">
+<div style="flex:2"><label>备注</label><input type="text" id="fNote" placeholder="可选"></div>
+<div style="flex:0 0 auto;align-self:flex-end"><button class="btn full" id="addSub">添加</button></div>
+</div>
+</div>
+<div class="card"><h3>所有订阅 <span class="more" id="allCount">0 项</span></h3><div class="subs" id="allList"></div></div>
+</div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const S='subscription_v1';
+const CATS=[
+{name:'流媒体',ico:'🎬',color:'#ef4444'},{name:'云服务',ico:'☁️',color:'#06b6d4'},
+{name:'软件',ico:'💻',color:'#8b5cf6'},{name:'会员',ico:'👑',color:'#f59e0b'},
+{name:'新闻',ico:'📰',color:'#10b981'},{name:'存储',ico:'💾',color:'#ec4899'},
+{name:'音乐',ico:'🎵',color:'#14b8a6'},{name:'其他',ico:'📦',color:'#6b7280'}
+];
+const catMap={};CATS.forEach(c=>catMap[c.name]=c);
+let data={subs:[]};let filterCat='';
+const uid=()=>Math.random().toString(36).slice(2,9);
+const save=()=>localStorage.setItem(S,JSON.stringify(data));
+const load=()=>{try{const d=JSON.parse(localStorage.getItem(S));if(d&&d.subs)data=d}catch(e){}};
+const fmt=n=>'¥'+Math.round(n*100)/100;
+const todayStr=()=>new Date().toISOString().slice(0,10);
+const daysLeft=end=>{if(!end)return 999;const d=new Date(end)-new Date();return Math.ceil(d/86400000)};
+let toastTimer;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800)}
+function seed(){if(data.subs.length)return;
+const samples=[
+['Netflix','流媒体',45,'monthly','2026-01-15','2026-11-15','4K套餐'],
+['iCloud+','存储',21,'monthly','2026-03-01','2026-12-01','200GB'],
+['ChatGPT Plus','软件',150,'monthly','2026-06-01','2026-12-01','GPT-4'],
+['京东PLUS','会员',99,'yearly','2026-01-01','2027-01-01','年费'],
+['网易云音乐','音乐',8,'monthly','2026-05-20','2026-11-20','黑胶VIP'],
+['华为云','云服务',59,'monthly','2026-08-01','2026-12-01','ECS按量'],
+['GitHub Copilot','软件',10,'monthly','2026-09-01','2026-10-01','即将到期'],
+['Notion','软件',56,'yearly','2026-01-10','2027-01-10','个人Pro']
+];
+samples.forEach(s=>data.subs.push({id:uid(),name:s[0],category:s[1],price:s[2],cycle:s[3],start:s[4],end:s[5],note:s[6],status:'active'}));
+save()}
+function monthlyCost(sub){if(sub.cycle==='monthly')return sub.price;if(sub.cycle==='yearly')return sub.price/12;if(sub.cycle==='weekly')return sub.price*4.33;if(sub.cycle==='quarterly')return sub.price/3;return sub.price}
+function subStatus(sub){if(sub.status==='cancelled')return'cancelled';const d=daysLeft(sub.end);if(d<0)return'expired';if(d<=7)return'expiring';return'active'}
+function renderOverview(){
+const monthly=data.subs.filter(s=>s.status!=='cancelled').reduce((sum,s)=>sum+monthlyCost(s),0);
+const yearly=monthly*12;
+const active=data.subs.filter(s=>subStatus(s)==='active').length;
+const expiring=data.subs.filter(s=>subStatus(s)==='expiring').length;
+const expired=data.subs.filter(s=>subStatus(s)==='expired').length;
+document.getElementById('monthlyTotal').textContent=fmt(monthly);
+document.getElementById('ovStats').innerHTML=`
+<div class="stat" style="--c:var(--teal)"><div class="ico">💰</div><div class="lbl">月度支出</div><div class="val">${fmt(monthly)}</div><div class="delta">年化 ${fmt(yearly)}</div></div>
+<div class="stat" style="--c:var(--green)"><div class="ico">✅</div><div class="lbl">活跃订阅</div><div class="val">${active}</div><div class="delta">共 ${data.subs.length} 项</div></div>
+<div class="stat" style="--c:var(--amber)"><div class="ico">⏰</div><div class="lbl">即将到期</div><div class="val">${expiring}</div><div class="delta">7天内到期</div></div>
+<div class="stat" style="--c:var(--red)"><div class="ico">❌</div><div class="lbl">已过期</div><div class="val">${expired}</div><div class="delta">需续费或取消</div></div>`;
+renderFilter();renderList()}
+function renderFilter(){
+const cf=document.getElementById('catFilter');
+cf.innerHTML=`<button class="cat-chip${filterCat===''?' active':''}" data-cat="">全部</button>`+CATS.map(c=>`<button class="cat-chip${filterCat===c.name?' active':''}" data-cat="${c.name}">${c.ico} ${c.name}</button>`).join('');
+cf.querySelectorAll('.cat-chip').forEach(b=>b.addEventListener('click',()=>{filterCat=b.dataset.cat;renderOverview()}))}
+function renderList(){
+let subs=[...data.subs].sort((a,b)=>daysLeft(a.end)-daysLeft(b.end));
+if(filterCat)subs=subs.filter(s=>s.category===filterCat);
+document.getElementById('subCount').textContent=subs.length+' 项';
+const el=document.getElementById('subList');
+el.innerHTML=subs.length?subs.map(s=>subHTML(s)).join(''):'<div class="empty">暂无订阅</div>';
+bindDels(el)}
+function subHTML(s){
+const c=catMap[s.category]||CATS[7];const st=subStatus(s);const d=daysLeft(s.end);
+const cycleText={monthly:'/月',yearly:'/年',weekly:'/周',quarterly:'/季'}[s.cycle]||'';
+const dText=st==='expired'?`已过期${Math.abs(d)}天`:st==='expiring'?`${d}天后到期`:`${d}天后到期`;
+return`<div class="sub-item">
+<div class="cat-ico" style="background:${c.color}22;color:${c.color}">${c.ico}</div>
+<div class="info"><div class="name">${s.name}</div><div class="meta">${s.category} · ${dText}${s.note?' · '+s.note:''}</div></div>
+<div class="price"><div class="p">${fmt(s.price)}</div><div class="c">${cycleText}</div></div>
+<span class="status ${st}">${{active:'活跃',expiring:'即将到期',expired:'已过期',cancelled:'已取消'}[st]}</span>
+<button class="del" data-id="${s.id}">✕</button></div>`}
+function bindDels(el){el.querySelectorAll('.del').forEach(b=>b.addEventListener('click',()=>{data.subs=data.subs.filter(s=>s.id!==b.dataset.id);save();renderAll();toast('已删除')}))}
+function renderManage(){
+const sel=document.getElementById('fCategory');
+sel.innerHTML=CATS.map(c=>`<option value="${c.name}">${c.ico} ${c.name}</option>`).join('');
+document.getElementById('fStart').value=todayStr();
+renderAllList()}
+function renderAllList(){
+const subs=[...data.subs].sort((a,b)=>daysLeft(a.end)-daysLeft(b.end));
+document.getElementById('allCount').textContent=subs.length+' 项';
+const el=document.getElementById('allList');
+el.innerHTML=subs.length?subs.map(s=>subHTML(s)).join(''):'<div class="empty">暂无订阅，点击上方添加</div>';
+bindDels(el)}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+t.classList.add('active');document.getElementById(t.dataset.page).classList.add('active');renderAll()}));
+document.getElementById('addSub').addEventListener('click',()=>{
+const name=document.getElementById('fName').value.trim();
+const cat=document.getElementById('fCategory').value;
+const price=parseFloat(document.getElementById('fPrice').value);
+const cycle=document.getElementById('fCycle').value;
+const start=document.getElementById('fStart').value;
+const end=document.getElementById('fEnd').value;
+const note=document.getElementById('fNote').value;
+if(!name)return toast('请输入服务名称');
+if(!price||price<=0)return toast('请输入价格');
+if(!end)return toast('请选择到期日期');
+data.subs.push({id:uid(),name,category:cat,price,cycle,start,end,note,status:'active'});
+document.getElementById('fName').value='';document.getElementById('fPrice').value='';document.getElementById('fNote').value='';document.getElementById('fEnd').value='';
+save();renderAll();toast('订阅已添加')});
+function renderAll(){renderOverview();const a=document.querySelector('.tab.active').dataset.page;if(a==='manage')renderManage()}
+load();seed();renderAll();
+</script>
+</body>
+</html>

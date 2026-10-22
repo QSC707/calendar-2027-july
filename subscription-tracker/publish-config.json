@@ -1,0 +1,10 @@
+{
+  "workName": "订阅管家·服务订阅管理",
+  "introduction": "订阅服务管理，统计月度支出到期提醒",
+  "gitUrl": "https://github.com/QSC707/calendar-2027-july.git",
+  "gitBranch": "master",
+  "campId": "e4c24564-04f0-42f0-8980-695fee23dcc3",
+  "htmlFile": "index.html",
+  "domainId": "057cc3d0d68010e60fb3c0075a0af360",
+  "region": "cn-north-4"
+}
