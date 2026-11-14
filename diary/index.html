@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>纸笺·日记本</title>
+<style>
+:root{
+  --paper:#f5efe0;--paper-dark:#ebe3d0;--ink:#3d3528;--ink-light:#7a6f5d;
+  --accent:#c4561a;--accent-light:#e8835a;--line:#d4c9b0;--highlight:#f0e6cc;
+  --mood-happy:#f4a261;--mood-calm:#90b9a8;--mood-sad:#8a9bb5;--mood-angry:#e76f51;--mood-excited:#e9c46a;--mood-love:#d4647c;
+  --weather-sunny:#f9b234;--weather-cloudy:#b0b8c4;--weather-rainy:#5b8def;--weather-snowy:#c8dde8;--weather-storm:#6c5b7b;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Georgia','Noto Serif SC',serif;background:var(--paper);color:var(--ink);min-height:100vh;background-image:radial-gradient(circle at 20% 80%,rgba(196,86,26,.04) 0,transparent 50%),radial-gradient(circle at 80% 20%,rgba(122,111,93,.05) 0,transparent 50%)}
+.app{max-width:1100px;margin:0 auto;padding:20px}
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:2px solid var(--line);margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{font-size:32px}
+.logo h1{font-size:26px;font-weight:normal;letter-spacing:2px}
+.logo .sub{font-size:12px;color:var(--ink-light);letter-spacing:4px}
+.stats-bar{display:flex;gap:16px;flex-wrap:wrap}
+.stat{text-align:center;min-width:60px}
+.stat .num{font-size:22px;color:var(--accent);font-weight:bold}
+.stat .label{font-size:11px;color:var(--ink-light);letter-spacing:1px}
+/* Layout */
+.main{display:grid;grid-template-columns:280px 1fr;gap:20px}
+@media(max-width:768px){.main{grid-template-columns:1fr}}
+/* Sidebar */
+.sidebar{background:var(--paper-dark);border-radius:12px;padding:16px;border:1px solid var(--line);height:fit-content}
+.sidebar h3{font-size:14px;color:var(--ink-light);margin-bottom:10px;letter-spacing:2px;text-transform:uppercase}
+.cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.cal-nav button{background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink);padding:4px 8px;border-radius:4px;transition:background .2s}
+.cal-nav button:hover{background:var(--highlight)}
+.cal-nav .month-label{font-size:15px;font-weight:bold}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.cal-grid .dow{font-size:10px;color:var(--ink-light);padding:4px 0}
+.cal-grid .day{font-size:12px;padding:6px 0;cursor:pointer;border-radius:6px;transition:all .2s;position:relative}
+.cal-grid .day:hover{background:var(--highlight)}
+.cal-grid .day.has-diary{font-weight:bold;color:var(--accent)}
+.cal-grid .day.has-diary::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.cal-grid .day.today{background:var(--accent);color:#fff}
+.cal-grid .day.today.has-diary::after{background:#fff}
+.cal-grid .day.other{color:var(--line)}
+.cal-grid .day.selected{box-shadow:0 0 0 2px var(--accent) inset}
+.search-box{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-family:inherit;font-size:13px;color:var(--ink);margin-top:12px}
+.search-box:focus{outline:none;border-color:var(--accent)}
+.mood-filter{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mood-chip{padding:4px 10px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid var(--line);background:var(--paper);transition:all .2s}
+.mood-chip:hover{border-color:var(--accent)}
+.mood-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* Content */
+.content{display:flex;flex-direction:column;gap:16px}
+/* Editor */
+.editor{background:#fff;border-radius:12px;padding:20px;border:1px solid var(--line);box-shadow:0 2px 8px rgba(61,53,40,.06);display:none}
+.editor.show{display:block}
+.editor-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.editor-date{font-size:16px;color:var(--ink-light)}
+.editor-title{width:100%;padding:8px 0;border:none;border-bottom:1px dashed var(--line);font-family:inherit;font-size:18px;color:var(--ink);background:transparent}
+.editor-title:focus{outline:none;border-bottom-color:var(--accent)}
+.editor-meta{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+.meta-group{display:flex;align-items:center;gap:6px}
+.meta-group label{font-size:12px;color:var(--ink-light)}
+.meta-select{padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--paper);font-family:inherit;font-size:12px;cursor:pointer}
+.editor-content{width:100%;min-height:200px;padding:12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px;line-height:1.8;color:var(--ink);resize:vertical;background:repeating-linear-gradient(transparent,transparent 27px,var(--line) 28px);background-attachment:local}
+.editor-content:focus{outline:none;border-color:var(--accent)}
+.editor-actions{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+.btn{padding:8px 20px;border:none;border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#a8450f}
+.btn-secondary{background:var(--paper-dark);color:var(--ink)}
+.btn-secondary:hover{background:var(--highlight)}
+.btn-danger{background:#e76f51;color:#fff}
+.btn-danger:hover{background:#c8553a}
+/* Diary List */
+.diary-list{display:flex;flex-direction:column;gap:12px}
+.diary-card{background:#fff;border-radius:12px;padding:18px;border:1px solid var(--line);box-shadow:0 2px 6px rgba(61,53,40,.05);cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+.diary-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(61,53,40,.1);border-color:var(--accent-light)}
+.diary-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--mood-color,var(--accent))}
+.diary-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.diary-card-title{font-size:17px;font-weight:bold;color:var(--ink)}
+.diary-card-date{font-size:12px;color:var(--ink-light)}
+.diary-card-mood{font-size:22px}
+.diary-card-preview{font-size:13px;color:var(--ink-light);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.diary-card-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.tag{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--paper-dark);color:var(--ink-light)}
+.empty{text-align:center;padding:60px 20px;color:var(--ink-light)}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
+.empty p{font-size:14px;margin-bottom:16px}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(61,53,40,.4);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-header h2{font-size:20px;font-weight:normal}
+.modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--ink-light);line-height:1}
+.modal-body{font-size:14px;line-height:1.8;color:var(--ink);white-space:pre-wrap}
+.modal-meta{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed var(--line)}
+.modal-meta-item{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-light)}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 24px;border-radius:8px;font-size:13px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.diary-card{animation:fadeIn .3s ease}
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">
+      <span class="logo-icon">📖</span>
+      <div>
+        <h1>纸笺</h1>
+        <div class="sub">D I A R Y</div>
+      </div>
+    </div>
+    <div class="stats-bar" id="statsBar"></div>
+  </header>
+
+  <div class="main">
+    <aside class="sidebar">
+      <h3>日历</h3>
+      <div class="cal-nav">
+        <button id="prevMonth">‹</button>
+        <span class="month-label" id="monthLabel"></span>
+        <button id="nextMonth">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <input type="text" class="search-box" id="searchBox" placeholder="🔍 搜索日记...">
+      <h3 style="margin-top:16px">心情筛选</h3>
+      <div class="mood-filter" id="moodFilter"></div>
+    </aside>
+
+    <div class="content">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2 style="font-size:18px;font-weight:normal;color:var(--ink-light)" id="contentTitle">我的日记</h2>
+        <button class="btn btn-primary" id="newBtn">✎ 写日记</button>
+      </div>
+
+      <div class="editor" id="editor">
+        <div class="editor-header">
+          <span class="editor-date" id="editorDate"></span>
+          <button class="btn btn-secondary" id="closeEditor">收起</button>
+        </div>
+        <input type="text" class="editor-title" id="editTitle" placeholder="标题..." maxlength="50">
+        <div class="editor-meta">
+          <div class="meta-group">
+            <label>心情</label>
+            <select class="meta-select" id="editMood"></select>
+          </div>
+          <div class="meta-group">
+            <label>天气</label>
+            <select class="meta-select" id="editWeather"></select>
+          </div>
+          <div class="meta-group">
+            <label>日期</label>
+            <input type="date" class="meta-select" id="editDate">
+          </div>
+        </div>
+        <textarea class="editor-content" id="editContent" placeholder="今天发生了什么..."></textarea>
+        <div class="editor-actions">
+          <button class="btn btn-danger" id="deleteBtn" style="display:none">删除</button>
+          <button class="btn btn-secondary" id="cancelBtn">取消</button>
+          <button class="btn btn-primary" id="saveBtn">保存</button>
+        </div>
+      </div>
+
+      <div class="diary-list" id="diaryList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle"></h2>
+      <button class="modal-close" id="modalClose">×</button>
+    </div>
+    <div class="modal-meta" id="modalMeta"></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="modalDelete">删除</button>
+      <button class="btn btn-primary" id="modalEdit">编辑</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MOODS=[
+  {id:'happy',emoji:'😊',label:'开心',color:'var(--mood-happy)'},
+  {id:'calm',emoji:'😌',label:'平静',color:'var(--mood-calm)'},
+  {id:'sad',emoji:'😢',label:'难过',color:'var(--mood-sad)'},
+  {id:'angry',emoji:'😤',label:'生气',color:'var(--mood-angry)'},
+  {id:'excited',emoji:'🤩',label:'激动',color:'var(--mood-excited)'},
+  {id:'love',emoji:'🥰',label:'幸福',color:'var(--mood-love)'},
+  {id:'tired',emoji:'😴',label:'疲惫',color:'#b0b8c4'},
+  {id:'grateful',emoji:'🙏',label:'感恩',color:'#a8d8b9'},
+];
+const WEATHERS=[
+  {id:'sunny',emoji:'☀️',label:'晴'},
+  {id:'cloudy',emoji:'☁️',label:'阴'},
+  {id:'rainy',emoji:'🌧️',label:'雨'},
+  {id:'snowy',emoji:'❄️',label:'雪'},
+  {id:'storm',emoji:'⛈️',label:'雷暴'},
+  {id:'foggy',emoji:'🌫️',label:'雾'},
+  {id:'windy',emoji:'💨',label:'风'},
+];
+const STORAGE_KEY='diary_entries';
+let diaries=[];
+let calDate=new Date();
+let selectedDate=null;
+let editingId=null;
+let moodFilterId=null;
+let searchText='';
+
+function loadDiaries(){
+  try{diaries=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){diaries=[]}
+  if(diaries.length===0){
+    const samples=[
+      {title:'新的一天开始了',mood:'happy',weather:'sunny',date:fmtDate(new Date()),content:'今天阳光明媚，早上起来跑步5公里，感觉整个人都充满了活力。\n\n下午和朋友一起去了一家新开的咖啡馆，环境很好，咖啡也很香。聊了很多最近的生活，很开心。\n\n晚上回家看了一本书，关于时间管理的，学到了一些新方法，打算明天开始试试。',tags:['运动','朋友','阅读']},
+      {title:'工作上的小挫折',mood:'sad',weather:'rainy',date:fmtDate(new Date(Date.now()-86400000)),content:'今天下雨了，心情也跟着有些低落。\n\n工作上遇到了一些问题，项目进度比预期慢了很多，被领导批评了一顿。虽然知道是为了我好，但还是有些难过。\n\n不过回家后吃了一碗热腾腾的面，心情好了一些。明天继续加油吧！',tags:['工作','反思']},
+      {title:'周末的午后',mood:'calm',weather:'cloudy',date:fmtDate(new Date(Date.now()-86400000*3)),content:'难得的周末，睡到自然醒。\n\n下午在阳台上晒了一会儿太阳，虽然今天多云，但偶尔有阳光透出来，很舒服。泡了一壶茶，翻了几页书，时间就这样慢慢流过。\n\n这种平静的感觉真好，不需要赶时间，不需要焦虑，只是安静地和自己待在一起。',tags:['周末','茶','独处']},
+      {title:'收到一份惊喜',mood:'excited',weather:'sunny',date:fmtDate(new Date(Date.now()-86400000*5)),content:'今天收到了一份意想不到的礼物！\n\n朋友寄来了一本我一直想买但没买到的绝版书，太惊喜了。翻开书页，还能闻到淡淡的书香，仿佛穿越了时光。\n\n这个世界上总有一些人，默默地记挂着你。感恩有你们。',tags:['礼物','朋友','感恩']},
+      {title:'深夜随想',mood:'grateful',weather:'foggy',date:fmtDate(new Date(Date.now()-86400000*7)),content:'夜深了，窗外起了雾。\n\n回顾这一周，虽然忙碌，但也充实。完成了一个重要的项目里程碑，学到了新的技术，也认识了一些有趣的人。\n\n生活就是这样吧，一点一滴地积累，慢慢地变成更好的自己。感谢每一天。',tags:['反思','感恩']},
+    ];
+    diaries=samples;
+    saveDiaries();
+  }
+}
+function saveDiaries(){localStorage.setItem(STORAGE_KEY,JSON.stringify(diaries))}
+
+function fmtDate(d){
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function getMood(id){return MOODS.find(m=>m.id===id)||MOODS[1]}
+function getWeather(id){return WEATHERS.find(w=>w.id===id)||WEATHERS[0]}
+
+function renderStats(){
+  const total=diaries.length;
+  const now=new Date();
+  const monthCount=diaries.filter(d=>d.date.startsWith(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`)).length;
+  const dates=[...new Set(diaries.map(d=>d.date))].sort();
+  let streak=0;
+  if(dates.length>0){
+    let check=new Date(dates[dates.length-1]);
+    for(let i=dates.length-1;i>=0;i--){
+      if(dates[i]===fmtDate(check)){streak++;check=new Date(check.getTime()-86400000)}
+      else break;
+    }
+  }
+  document.getElementById('statsBar').innerHTML=`
+    <div class="stat"><div class="num">${total}</div><div class="label">总篇数</div></div>
+    <div class="stat"><div class="num">${monthCount}</div><div class="label">本月</div></div>
+    <div class="stat"><div class="num">${streak}</div><div class="label">连续天数</div></div>
+  `;
+}
+
+function renderCalendar(){
+  const y=calDate.getFullYear(),m=calDate.getMonth();
+  document.getElementById('monthLabel').textContent=`${y}年${m+1}月`;
+  const first=new Date(y,m,1);
+  const last=new Date(y,m+1,0);
+  const startDow=first.getDay();
+  const daysInMonth=last.getDate();
+  const prevLast=new Date(y,m,0).getDate();
+  let html='<div class="cal-grid-inner" style="display:contents">';
+  ['日','一','二','三','四','五','六'].forEach(d=>html+=`<div class="dow">${d}</div>`);
+  for(let i=0;i<startDow;i++)html+=`<div class="day other">${prevLast-startDow+i+1}</div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=fmtDate(new Date(y,m,d));
+    const has=diaries.some(di=>di.date===ds);
+    const isToday=ds===fmtDate(new Date());
+    const isSel=ds===selectedDate;
+    html+=`<div class="day${has?' has-diary':''}${isToday?' today':''}${isSel?' selected':''}" onclick="selectDate('${ds}')">${d}</div>`;
+  }
+  const totalCells=startDow+daysInMonth;
+  const remain=(7-totalCells%7)%7;
+  for(let i=1;i<=remain;i++)html+=`<div class="day other">${i}</div>`;
+  document.getElementById('calGrid').innerHTML=html;
+}
+
+function selectDate(ds){
+  selectedDate=ds;
+  renderCalendar();
+  const filtered=getFilteredDiaries().filter(d=>d.date===ds);
+  if(filtered.length>0){
+    document.getElementById('contentTitle').textContent=`${ds} 的日记`;
+    renderList(filtered);
+  }else{
+    document.getElementById('contentTitle').textContent=`${ds} 暂无日记`;
+    renderList([]);
+  }
+}
+
+function renderMoodFilter(){
+  let html=`<div class="mood-chip${moodFilterId===null?' active':''}" onclick="setMoodFilter(null)">全部</div>`;
+  MOODS.forEach(m=>{
+    html+=`<div class="mood-chip${moodFilterId===m.id?' active':''}" onclick="setMoodFilter('${m.id}')">${m.emoji} ${m.label}</div>`;
+  });
+  document.getElementById('moodFilter').innerHTML=html;
+}
+function setMoodFilter(id){moodFilterId=id;renderMoodFilter();renderAll()}
+
+function getFilteredDiaries(){
+  let list=[...diaries].sort((a,b)=>b.date.localeCompare(a.date));
+  if(moodFilterId)list=list.filter(d=>d.mood===moodFilterId);
+  if(searchText){
+    const q=searchText.toLowerCase();
+    list=list.filter(d=>d.title.toLowerCase().includes(q)||d.content.toLowerCase().includes(q));
+  }
+  return list;
+}
+
+function renderList(list){
+  const el=document.getElementById('diaryList');
+  if(list.length===0){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">📖</div><p>还没有日记，点击「写日记」开始记录吧</p></div>`;
+    return;
+  }
+  el.innerHTML=list.map(d=>{
+    const mood=getMood(d.mood);
+    const weather=getWeather(d.weather);
+    const preview=d.content.replace(/\n/g,' ').substring(0,100);
+    return `<div class="diary-card" style="--mood-color:${mood.color}" onclick="openDiary('${d.id}')">
+      <div class="diary-card-header">
+        <div>
+          <div class="diary-card-title">${esc(d.title)}</div>
+          <div class="diary-card-date">${d.date} ${weather.emoji}${weather.label}</div>
+        </div>
+        <div class="diary-card-mood">${mood.emoji}</div>
+      </div>
+      <div class="diary-card-preview">${esc(preview)}</div>
+      ${d.tags?`<div class="diary-card-tags">${d.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function openDiary(id){
+  const d=diaries.find(x=>x.id===id);
+  if(!d)return;
+  const mood=getMood(d.mood),weather=getWeather(d.weather);
+  document.getElementById('modalTitle').textContent=d.title;
+  document.getElementById('modalMeta').innerHTML=`
+    <div class="modal-meta-item">📅 ${d.date}</div>
+    <div class="modal-meta-item">${mood.emoji} ${mood.label}</div>
+    <div class="modal-meta-item">${weather.emoji} ${weather.label}</div>
+    ${d.tags?d.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join(''):''}
+  `;
+  document.getElementById('modalBody').textContent=d.content;
+  document.getElementById('modalOverlay').classList.add('show');
+  document.getElementById('modalEdit').onclick=()=>{closeModal();editDiary(id)};
+  document.getElementById('modalDelete').onclick=()=>{closeModal();deleteDiary(id)};
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+
+function editDiary(id){
+  const d=diaries.find(x=>x.id===id);
+  if(!d)return;
+  editingId=id;
+  document.getElementById('editTitle').value=d.title;
+  document.getElementById('editMood').value=d.mood;
+  document.getElementById('editWeather').value=d.weather;
+  document.getElementById('editDate').value=d.date;
+  document.getElementById('editContent').value=d.content;
+  document.getElementById('editorDate').textContent=`编辑日记 · ${d.date}`;
+  document.getElementById('deleteBtn').style.display='inline-block';
+  document.getElementById('editor').classList.add('show');
+  document.getElementById('editContent').focus();
+}
+
+function newDiary(){
+  editingId=null;
+  document.getElementById('editTitle').value='';
+  document.getElementById('editMood').value='calm';
+  document.getElementById('editWeather').value='sunny';
+  document.getElementById('editDate').value=fmtDate(new Date());
+  document.getElementById('editContent').value='';
+  document.getElementById('editorDate').textContent='写新日记';
+  document.getElementById('deleteBtn').style.display='none';
+  document.getElementById('editor').classList.add('show');
+  document.getElementById('editTitle').focus();
+}
+
+function saveDiary(){
+  const title=document.getElementById('editTitle').value.trim();
+  const content=document.getElementById('editContent').value.trim();
+  if(!title&&!content){toast('请输入标题或内容');return}
+  const data={
+    title:title||'无题',
+    mood:document.getElementById('editMood').value,
+    weather:document.getElementById('editWeather').value,
+    date:document.getElementById('editDate').value||fmtDate(new Date()),
+    content:content,
+  };
+  if(editingId){
+    const d=diaries.find(x=>x.id===editingId);
+    Object.assign(d,data);
+    toast('日记已更新');
+  }else{
+    data.id='d'+Date.now()+Math.random().toString(36).slice(2,6);
+    data.tags=autoTags(content);
+    diaries.push(data);
+    toast('日记已保存 ✨');
+  }
+  saveDiaries();
+  closeEditor();
+  renderAll();
+}
+
+function autoTags(content){
+  const map={运动:['跑步','健身','游泳','瑜伽'],美食:['吃','餐','饭','面','咖啡','茶'],工作:['工作','项目','会议','加班'],朋友:['朋友','聊天','聚会'],阅读:['书','看','读'],旅行:['旅行','旅游','出发'],家人:['妈妈','爸爸','家','家人']};
+  const tags=[];
+  for(const[tag,kws]of Object.entries(map)){
+    if(kws.some(k=>content.includes(k)))tags.push(tag);
+  }
+  return tags.slice(0,4);
+}
+
+function deleteDiary(id){
+  if(!confirm('确定删除这篇日记吗？'))return;
+  diaries=diaries.filter(d=>d.id!==id);
+  saveDiaries();
+  toast('日记已删除');
+  renderAll();
+}
+
+function closeEditor(){
+  document.getElementById('editor').classList.remove('show');
+  editingId=null;
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+function renderAll(){renderStats();renderCalendar();renderMoodFilter();renderList(getFilteredDiaries())}
+
+function init(){
+  const moodSel=document.getElementById('editMood');
+  moodSel.innerHTML=MOODS.map(m=>`<option value="${m.id}">${m.emoji} ${m.label}</option>`).join('');
+  const weatherSel=document.getElementById('editWeather');
+  weatherSel.innerHTML=WEATHERS.map(w=>`<option value="${w.id}">${w.emoji} ${w.label}</option>`).join('');
+  loadDiaries();
+  renderAll();
+  document.getElementById('newBtn').onclick=newDiary;
+  document.getElementById('saveBtn').onclick=saveDiary;
+  document.getElementById('cancelBtn').onclick=closeEditor;
+  document.getElementById('closeEditor').onclick=closeEditor;
+  document.getElementById('deleteBtn').onclick=()=>{if(editingId)deleteDiary(editingId);closeEditor()};
+  document.getElementById('prevMonth').onclick=()=>{calDate.setMonth(calDate.getMonth()-1);renderCalendar()};
+  document.getElementById('nextMonth').onclick=()=>{calDate.setMonth(calDate.getMonth()+1);renderCalendar()};
+  document.getElementById('modalClose').onclick=closeModal;
+  document.getElementById('modalOverlay').onclick=e=>{if(e.target.id==='modalOverlay')closeModal()};
+  document.getElementById('searchBox').oninput=e=>{searchText=e.target.value;renderList(getFilteredDiaries())};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeEditor()}});
+}
+init();
+</script>
+</body>
+</html>
