@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分期价值计算器</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#232733;--border:#2d313e;
+  --text:#e4e7ef;--text2:#9499ad;--accent:#00d4aa;--accent2:#0fb88a;
+  --warn:#f5a623;--danger:#e76f51;--info:#5b8def;--purple:#a855f7;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'Segoe UI','Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{max-width:1200px;margin:0 auto;padding:24px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:24px}
+.logo h1{font-size:22px;font-weight:600;letter-spacing:.5px}
+.logo .sub{font-size:11px;color:var(--text2);letter-spacing:3px;text-transform:uppercase}
+/* Layout */
+.grid{display:grid;grid-template-columns:380px 1fr;gap:20px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+/* Card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px}
+.card h2{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:16px;letter-spacing:1px}
+/* Input */
+.input-group{margin-bottom:16px}
+.input-group label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-wrap input{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;font-family:inherit;transition:border-color .2s}
+.input-wrap input:focus{outline:none;border-color:var(--accent)}
+.input-wrap .suffix{position:absolute;right:14px;color:var(--text2);font-size:13px;pointer-events:none}
+.range-row{display:flex;align-items:center;gap:10px;margin-top:8px}
+.range-row input[type=range]{flex:1;accent-color:var(--accent);height:4px}
+.range-row .val{font-size:13px;color:var(--accent);min-width:50px;text-align:right}
+/* Mode toggle */
+.mode-toggle{display:flex;gap:0;background:var(--surface2);border-radius:10px;padding:3px;margin-bottom:16px}
+.mode-toggle button{flex:1;padding:10px;border:none;background:none;color:var(--text2);font-size:13px;font-family:inherit;cursor:pointer;border-radius:8px;transition:all .2s}
+.mode-toggle button.active{background:var(--accent);color:#0f1117;font-weight:600}
+/* Buttons */
+.btn{width:100%;padding:14px;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0f1117}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,212,170,.3)}
+/* Results */
+.results{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:600px){.results{grid-template-columns:1fr}}
+.result-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.result-card .label{font-size:11px;color:var(--text2);margin-bottom:6px;letter-spacing:1px}
+.result-card .value{font-size:24px;font-weight:700}
+.result-card .unit{font-size:12px;color:var(--text2);margin-top:2px}
+.result-card.highlight .value{color:var(--accent)}
+.result-card.warn .value{color:var(--warn)}
+.result-card.danger .value{color:var(--danger)}
+/* Comparison */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+@media(max-width:600px){.compare{grid-template-columns:1fr}}
+.compare-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px}
+.compare-card .title{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.compare-card .dot{width:8px;height:8px;border-radius:50%}
+.compare-card .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.compare-card .row .k{color:var(--text2)}
+.compare-card .row .v{font-weight:600}
+/* Chart */
+.chart-section{margin-bottom:20px}
+.chart-section h3{font-size:13px;color:var(--text2);margin-bottom:12px}
+canvas{width:100%;border-radius:10px;background:var(--surface2)}
+/* Table */
+.table-wrap{overflow-x:auto;border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 12px;text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:center}
+th{background:var(--surface2);color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.5px;position:sticky;top:0}
+td{border-bottom:1px solid var(--border)}
+tbody tr:hover{background:var(--surface2)}
+.month-cell{color:var(--accent);font-weight:600}
+.principal-cell{color:var(--accent)}
+.interest-cell{color:var(--warn)}
+.balance-cell{color:var(--text2)}
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.3}
+/* Preset */
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.preset{padding:6px 14px;border:1px solid var(--border);border-radius:20px;font-size:12px;cursor:pointer;background:var(--surface2);color:var(--text2);transition:all .2s}
+.preset:hover{border-color:var(--accent);color:var(--accent)}
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0f1117;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;z-index:100;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text2)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">💰</div>
+      <div>
+        <h1>分期价值计算器</h1>
+        <div class="sub">INSTALLMENT CALCULATOR</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Input Panel -->
+    <div class="card">
+      <h2>参数设置</h2>
+      <div class="presets">
+        <div class="preset" onclick="preset(100000,4.9,360)">房贷100万30年</div>
+        <div class="preset" onclick="preset(500000,3.85,360)">公积金50万30年</div>
+        <div class="preset" onclick="preset(200000,5.5,60)">车贷20万5年</div>
+        <div class="preset" onclick="preset(12000,12,12)">消费1.2万1年</div>
+      </div>
+      <div class="input-group">
+        <label>贷款本金</label>
+        <div class="input-wrap">
+          <input type="number" id="principal" value="100000" min="0" step="1000">
+          <span class="suffix">元</span>
+        </div>
+        <div class="range-row">
+          <input type="range" id="principalRange" min="1000" max="5000000" step="1000" value="100000">
+          <span class="val" id="principalVal">10万</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>年利率</label>
+        <div class="input-wrap">
+          <input type="number" id="rate" value="4.9" min="0" max="36" step="0.05">
+          <span class="suffix">%</span>
+        </div>
+        <div class="range-row">
+          <input type="range" id="rateRange" min="0" max="20" step="0.05" value="4.9">
+          <span class="val" id="rateVal">4.9%</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>分期期数</label>
+        <div class="input-wrap">
+          <input type="number" id="periods" value="360" min="1" max="600" step="1">
+          <span class="suffix">月</span>
+        </div>
+        <div class="range-row">
+          <input type="range" id="periodsRange" min="1" max="360" step="1" value="360">
+          <span class="val" id="periodsVal">360月</span>
+        </div>
+      </div>
+      <div class="mode-toggle">
+        <button class="active" id="modeEqual" onclick="setMode('equal')">等额本息</button>
+        <button id="modePrincipal" onclick="setMode('principal')">等额本金</button>
+      </div>
+      <button class="btn btn-primary" onclick="calculate()">开始计算</button>
+    </div>
+
+    <!-- Result Panel -->
+    <div id="resultPanel">
+      <div class="empty">
+        <div class="empty-icon">📊</div>
+        <p>输入参数后点击「开始计算」</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let mode='equal';
+
+function preset(p,r,n){
+  document.getElementById('principal').value=p;
+  document.getElementById('rate').value=r;
+  document.getElementById('periods').value=n;
+  syncRanges();
+  calculate();
+}
+
+function setMode(m){
+  mode=m;
+  document.getElementById('modeEqual').classList.toggle('active',m==='equal');
+  document.getElementById('modePrincipal').classList.toggle('active',m==='principal');
+  calculate();
+}
+
+function syncRanges(){
+  const p=+document.getElementById('principal').value;
+  const r=+document.getElementById('rate').value;
+  const n=+document.getElementById('periods').value;
+  document.getElementById('principalRange').value=Math.min(p,5000000);
+  document.getElementById('rateRange').value=Math.min(r,20);
+  document.getElementById('periodsRange').value=Math.min(n,360);
+  document.getElementById('principalVal').textContent=fmtWan(p);
+  document.getElementById('rateVal').textContent=r+'%';
+  document.getElementById('periodsVal').textContent=n+'月';
+}
+
+function fmtWan(v){return v>=10000?(v/10000).toFixed(v%10000?1:0)+'万':v}
+
+function fmtMoney(v){return v.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})}
+
+function calculate(){
+  const P=+document.getElementById('principal').value;
+  const annualRate=+document.getElementById('rate').value;
+  const n=+document.getElementById('periods').value;
+  if(P<=0||n<=0){toast('请输入有效参数');return}
+  const r=annualRate/100/12;
+
+  let schedule=[],monthlyPay,totalInterest,totalPay;
+
+  if(mode==='equal'){
+    // 等额本息
+    if(r===0){monthlyPay=P/n;totalPay=P;totalInterest=0}
+    else{monthlyPay=P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);totalPay=monthlyPay*n;totalInterest=totalPay-P}
+    let balance=P;
+    for(let i=1;i<=n;i++){
+      const interest=balance*r;
+      const principal=monthlyPay-interest;
+      balance-=principal;
+      schedule.push({month:i,principal,interest,balance:Math.max(0,balance),payment:monthlyPay});
+    }
+  }else{
+    // 等额本金
+    const monthlyPrincipal=P/n;
+    let balance=P;
+    totalInterest=0;
+    for(let i=1;i<=n;i++){
+      const interest=balance*r;
+      const payment=monthlyPrincipal+interest;
+      balance-=monthlyPrincipal;
+      totalInterest+=interest;
+      schedule.push({month:i,principal:monthlyPrincipal,interest,balance:Math.max(0,balance),payment});
+    }
+    totalPay=P+totalInterest;
+    monthlyPay=schedule[0].payment;
+  }
+
+  renderResults(P,annualRate,n,monthlyPay,totalInterest,totalPay,schedule);
+}
+
+function renderResults(P,rate,n,monthlyPay,totalInterest,totalPay,schedule){
+  // 对比计算
+  const r=rate/100/12;
+  let equalPay,equalInterest,principalInterest;
+  if(r===0){equalPay=P/n;equalInterest=0}
+  else{equalPay=P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);equalInterest=equalPay*n-P}
+  principalInterest=P*r*(n+1)/2;
+
+  const firstPay=schedule[0].payment;
+  const lastPay=schedule[n-1].payment;
+  const avgPay=totalPay/n;
+
+  const panel=document.getElementById('resultPanel');
+  panel.innerHTML=`
+    <div class="card" style="margin-bottom:20px">
+      <h2>计算结果 · ${mode==='equal'?'等额本息':'等额本金'}</h2>
+      <div class="results">
+        <div class="result-card highlight">
+          <div class="label">${mode==='equal'?'每月还款':'首月还款'}</div>
+          <div class="value">${fmtMoney(firstPay)}</div>
+          <div class="unit">元/月</div>
+        </div>
+        <div class="result-card warn">
+          <div class="label">总利息</div>
+          <div class="value">${fmtMoney(totalInterest)}</div>
+          <div class="unit">元</div>
+        </div>
+        <div class="result-card danger">
+          <div class="label">总还款额</div>
+          <div class="value">${fmtMoney(totalPay)}</div>
+          <div class="unit">元</div>
+        </div>
+      </div>
+      ${mode==='principal'?`
+      <div class="results" style="margin-bottom:0">
+        <div class="result-card">
+          <div class="label">末月还款</div>
+          <div class="value">${fmtMoney(lastPay)}</div>
+          <div class="unit">元/月</div>
+        </div>
+        <div class="result-card">
+          <div class="label">月均还款</div>
+          <div class="value">${fmtMoney(avgPay)}</div>
+          <div class="unit">元/月</div>
+        </div>
+        <div class="result-card">
+          <div class="label">利息占比</div>
+          <div class="value">${(totalInterest/totalPay*100).toFixed(1)}%</div>
+          <div class="unit">利息/总额</div>
+        </div>
+      </div>`:`
+      <div class="results" style="margin-bottom:0">
+        <div class="result-card">
+          <div class="label">利息占比</div>
+          <div class="value">${(totalInterest/totalPay*100).toFixed(1)}%</div>
+          <div class="unit">利息/总额</div>
+        </div>
+        <div class="result-card">
+          <div class="label">本金占比</div>
+          <div class="value">${(P/totalPay*100).toFixed(1)}%</div>
+          <div class="unit">本金/总额</div>
+        </div>
+        <div class="result-card">
+          <div class="label">实际年化</div>
+          <div class="value">${(totalInterest/P*12/n*100*12).toFixed(2)}%</div>
+          <div class="unit">等效年利率</div>
+        </div>
+      </div>`}
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <h2>两种方式对比</h2>
+      <div class="compare">
+        <div class="compare-card">
+          <div class="title"><span class="dot" style="background:var(--accent)"></span>等额本息</div>
+          <div class="row"><span class="k">月供</span><span class="v">${fmtMoney(equalPay)}</span></div>
+          <div class="row"><span class="k">总利息</span><span class="v" style="color:var(--warn)">${fmtMoney(equalInterest)}</span></div>
+          <div class="row"><span class="k">总还款</span><span class="v">${fmtMoney(P+equalInterest)}</span></div>
+        </div>
+        <div class="compare-card">
+          <div class="title"><span class="dot" style="background:var(--info)"></span>等额本金</div>
+          <div class="row"><span class="k">首月供</span><span class="v">${fmtMoney(P/n+P*r)}</span></div>
+          <div class="row"><span class="k">总利息</span><span class="v" style="color:var(--warn)">${fmtMoney(principalInterest)}</span></div>
+          <div class="row"><span class="k">总还款</span><span class="v">${fmtMoney(P+principalInterest)}</span></div>
+        </div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--surface2);border-radius:8px;font-size:13px;color:var(--text2)">
+        💡 等额本金总利息少 <strong style="color:var(--accent)">${fmtMoney(equalInterest-principalInterest)}</strong> 元，但前期月供更高
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <h2>还款趋势图</h2>
+      <canvas id="chart" height="240"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>还款明细表 · 前${Math.min(n,120)}期${n>120?'（显示前120期）':''}</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>期数</th><th>月供</th><th>本金</th><th>利息</th><th>剩余本金</th></tr>
+          </thead>
+          <tbody>
+            ${schedule.slice(0,120).map(s=>`
+              <tr>
+                <td class="month-cell">${s.month}</td>
+                <td>${fmtMoney(s.payment)}</td>
+                <td class="principal-cell">${fmtMoney(s.principal)}</td>
+                <td class="interest-cell">${fmtMoney(s.interest)}</td>
+                <td class="balance-cell">${fmtMoney(s.balance)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  drawChart(schedule);
+}
+
+function drawChart(schedule){
+  const canvas=document.getElementById('chart');
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const w=canvas.offsetWidth,h=canvas.offsetHeight;
+  canvas.width=w*dpr;canvas.height=h*dpr;
+  ctx.scale(dpr,dpr);
+
+  const pad={l:50,r:20,t:20,b:30};
+  const cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+
+  const n=schedule.length;
+  const maxPay=Math.max(...schedule.map(s=>s.payment));
+
+  // Grid
+  ctx.strokeStyle='#2d313e';ctx.lineWidth=1;ctx.fillStyle='#9499ad';ctx.font='11px sans-serif';
+  for(let i=0;i<=4;i++){
+    const y=pad.t+ch*i/4;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();
+    ctx.textAlign='right';ctx.fillText(fmtMoney(maxPay*(1-i/4)),pad.l-6,y+4);
+  }
+  // X labels
+  const xSteps=Math.min(n,12);
+  for(let i=0;i<=xSteps;i++){
+    const x=pad.l+cw*i/xSteps;
+    const m=Math.round(n*i/xSteps);
+    ctx.textAlign='center';ctx.fillText(m+'期',x,h-pad.b+16);
+  }
+
+  // Interest area
+  ctx.fillStyle='rgba(245,166,35,0.15)';
+  ctx.beginPath();ctx.moveTo(pad.l,pad.t+ch);
+  const step=cw/(n-1);
+  for(let i=0;i<n;i++){
+    const x=pad.l+step*i;
+    const y=pad.t+ch*(1-schedule[i].interest/maxPay);
+    ctx.lineTo(x,y);
+  }
+  ctx.lineTo(pad.l+cw,pad.t+ch);ctx.closePath();ctx.fill();
+
+  // Principal area
+  ctx.fillStyle='rgba(0,212,170,0.15)';
+  ctx.beginPath();ctx.moveTo(pad.l,pad.t+ch);
+  for(let i=0;i<n;i++){
+    const x=pad.l+step*i;
+    const y=pad.t+ch*(1-schedule[i].principal/maxPay);
+    ctx.lineTo(x,y);
+  }
+  ctx.lineTo(pad.l+cw,pad.t+ch);ctx.closePath();ctx.fill();
+
+  // Payment line
+  ctx.strokeStyle='#00d4aa';ctx.lineWidth=2;
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const x=pad.l+step*i;
+    const y=pad.t+ch*(1-schedule[i].payment/maxPay);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // Interest line
+  ctx.strokeStyle='#f5a623';ctx.lineWidth=1.5;
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const x=pad.l+step*i;
+    const y=pad.t+ch*(1-schedule[i].interest/maxPay);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // Legend
+  ctx.font='12px sans-serif';
+  ctx.fillStyle='#00d4aa';ctx.fillRect(pad.l+8,pad.t+4,12,3);
+  ctx.fillStyle='#e4e7ef';ctx.textAlign='left';ctx.fillText('月供',pad.l+24,pad.t+10);
+  ctx.fillStyle='#f5a623';ctx.fillRect(pad.l+70,pad.t+4,12,3);
+  ctx.fillStyle='#e4e7ef';ctx.fillText('利息',pad.l+86,pad.t+10);
+  ctx.fillStyle='#00d4aa';ctx.globalAlpha=0.3;ctx.fillRect(pad.l+130,pad.t+2,12,10);
+  ctx.globalAlpha=1;ctx.fillStyle='#e4e7ef';ctx.fillText('本金',pad.l+146,pad.t+10);
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// Bind ranges
+['principal','rate','periods'].forEach(id=>{
+  const input=document.getElementById(id);
+  const range=document.getElementById(id+'Range');
+  input.addEventListener('input',()=>{syncRanges()});
+  range.addEventListener('input',()=>{
+    input.value=range.value;syncRanges();
+  });
+});
+
+// Auto-calculate on load
+calculate();
+</script>
+</body>
+</html>
